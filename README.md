@@ -14,6 +14,7 @@ Next.js 16 (App Router) hébergé sur Vercel, Supabase (base PostgreSQL, comptes
 | Disponibilités réelles | Devis calculé par la base (tarifs saisonniers, ménage, séjour minimum), nuits occupées sur 60 jours, recherche par dates, créneaux d'excursion avec places restantes |
 | Comptes | Inscription voyageur ou prestataire, connexion, mot de passe oublié, confirmation par e-mail, déconnexion (Supabase Auth) |
 | Espace client | Profil, favoris synchronisés sur tous les appareils, plusieurs séjours, création d'un séjour qui enregistre et redirige vers les favoris, ajout et retrait d'activités, panier multi-prestataires revérifié en direct, réservations et paiements |
+| Planificateur payant | Essai gratuit (3 activités par séjour), puis fenêtre de déblocage à 19,99 € par séjour ; la sélection est toujours conservée. Règle appliquée par la base (migration 6, table `planner_unlocks`). Réglages : `update settings set value = '24.99' where key = 'planner_price';` et `planner_free_items`. Le bouton enregistre la demande ; le paiement Stripe s'y branchera (`mark_planner_unlock_paid` depuis le webhook) |
 | Langues | FR / EN / ES dans l'adresse (`/fr`, `/en`, `/es`), choix mémorisé |
 | Référencement | Titres et descriptions traduits par page, hreflang et canonical, `sitemap.xml` dynamique (3 langues, images), `robots.txt`, données structurées schema.org (Organization, WebSite + recherche, TouristDestination, LodgingBusiness, TouristTrip, TouristAttraction/Restaurant/Beach, BreadcrumbList, ItemList), Open Graph et cartes X, pages privées en noindex, images AVIF/WebP à la bonne taille, favicon et manifeste. Contrôle : `node tests/seo.mjs` |
 
@@ -31,8 +32,8 @@ lib/db.ts            connexion à la base : chaque requête porte l'identité de
 lib/catalog.ts       lecture du catalogue
 lib/i18n.ts          traductions (lib/dict-base.ts reprend celles de la maquette)
 proxy.ts             langue dans l'adresse + rafraîchissement de la session
-supabase/            migrations (5), tests SQL, données de démonstration
-tests/parcours.mjs   test du parcours voyageur dans un vrai navigateur (31 vérifications)
+supabase/            migrations (6), tests SQL, données de démonstration
+tests/parcours.mjs   test du parcours voyageur dans un vrai navigateur (41 vérifications)
 ```
 
 La sécurité repose sur la base : le site se connecte avec l'identité vérifiée de la personne (`set role authenticated` + identifiant), donc un client ne peut lire ou modifier que ses propres données, même en cas d'erreur dans le code du site.

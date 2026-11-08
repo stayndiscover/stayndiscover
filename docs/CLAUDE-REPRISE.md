@@ -54,6 +54,11 @@ StayNdiscover (le logo écrit « StayNdiscover ») est une plateforme touristiqu
    - les fiches sans photo affichent les illustrations générées de la maquette ;
    - les données de démonstration sont dans `supabase/demo/` ;
    - une migration 5 ajoute la table `newsletter_subscribers`.
+   - **Planificateur payant** (demande de Marion, 8 novembre 2026) :
+     - essai gratuit de 3 activités par séjour, puis fenêtre de déblocage à 19,99 € par séjour ; la sélection est conservée ;
+     - migration 6 : table `planner_unlocks`, réglages `planner_price` et `planner_free_items`, trigger `trip_items_paywall`, fonctions `planner_status`, `request_planner_unlock` et `mark_planner_unlock_paid` (rôle service uniquement) ;
+     - côté site : `unlockPlanner` dans `app/actions.ts` et `components/PlannerPaywall.tsx` ;
+     - **à l'étape Stripe :** créer la session Checkout dans `unlockPlanner` (19,99 €, 100 % pour la plateforme, sans Connect), puis appeler `mark_planner_unlock_paid` depuis le webhook.
    - **Référencement** (fait le 8 novembre 2026) :
      - `lib/seo.ts` (`pageMeta`, `privateMeta`), `app/sitemap.ts`, `app/robots.ts`, `app/manifest.ts` ;
      - données schema.org sur chaque page publique ; la note n'est publiée que s'il y a de vrais avis ;
@@ -87,7 +92,7 @@ Fonctions SQL déjà prêtes pour les fonctions serveur de la phase 2 :
 
 1. **Mise en ligne par Marion**, en suivant `docs/GUIDE-MISE-EN-LIGNE.md` (GitHub, Supabase, Vercel, compte admin). Si elle donne l'accès à son dépôt GitHub, Claude peut y envoyer le code.
 2. **Ensuite**, dans l'ordre :
-   - Stripe Connect (Checkout, webhook vers `authorize_order`, `mark_order_paid` et `fail_order`, transferts) : le bouton « Payer » du panier attend cette étape ;
+   - Stripe Connect (Checkout, webhook vers `authorize_order`, `mark_order_paid` et `fail_order`, transferts) : le bouton « Payer » du panier attend cette étape, ainsi que le déblocage du planificateur à 19,99 € ;
    - espace prestataire et administration ;
    - planificateur automatique (Google Routes) et PDF ;
    - e-mails (Resend) et synchronisation iCal planifiée ;

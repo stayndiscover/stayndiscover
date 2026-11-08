@@ -116,10 +116,13 @@ export async function createTrip(_: FormState, f: FormData): Promise<FormState> 
           ['calm', 'balanced', 'intense'].includes(str(f, 'pace')) ? str(f, 'pace') : 'balanced', str(f, 'budget'), str(f, 'preferences')]);
       if (!trip) throw new Error('INVALID: destination');
       // Comme prévu au cahier des charges : les favoris de cette destination rejoignent le séjour
+      // (même au-delà de l'essai gratuit du planificateur : la sélection n'est jamais perdue)
+      await db.query(`select set_config('stayndiscover.trip_creation', 'on', true)`);
       await db.query(`insert into public.trip_items (trip_id, listing_id, sort_order)
         select $1, f.listing_id, row_number() over (order by f.created_at) from public.favorites f
           join public.listings l on l.id = f.listing_id
          where f.user_id = $2 and l.destination_id = $3 and l.type <> 'hebergement' on conflict do nothing`, [trip.id, me.id, trip.destination_id]);
+      await db.query(`select set_config('stayndiscover.trip_creation', '', true)`);
       return trip.id;
     });
   } catch (e) {
@@ -140,6 +143,7 @@ export async function toggleTripItem(f: FormData) {
   const lang = langOf(f);
   const listing = str(f, 'listing');
   let trip = str(f, 'trip');
+  let paywall = false;
   const ok = await withDb(me.id, async (db) => {
     if (!trip) {
       // séjour le plus proche dans le temps pour la destination de la fiche
@@ -149,12 +153,40 @@ export async function toggleTripItem(f: FormData) {
       trip = t0.id;
     }
     const del = await db.query('delete from public.trip_items where trip_id = $1 and listing_id = $2', [trip, listing]);
-    if (!del.rowCount) await db.query(`insert into public.trip_items (trip_id, listing_id, sort_order)
-      values ($1, $2, coalesce((select max(sort_order) + 1 from public.trip_items where trip_id = $1), 1))`, [trip, listing]);
+    if (!del.rowCount) {
+      await db.query('savepoint add_item');
+      try {
+        await db.query(`insert into public.trip_items (trip_id, listing_id, sort_order)
+          values ($1, $2, coalesce((select max(sort_order) + 1 from public.trip_items where trip_id = $1), 1))`, [trip, listing]);
+      } catch (e) {
+        if (!String(e instanceof Error ? e.message : e).startsWith('PAYWALL')) throw e;
+        await db.query('rollback to savepoint add_item');
+        paywall = true;
+      }
+    }
     return true;
   });
   if (!ok) redirect(`/${lang}/sejour?nouveau=1&dest=${encodeURIComponent(str(f, 'dest'))}`);
+  if (paywall) redirect(withParams(safePath(str(f, 'path'), lang), { offre: 'planificateur', sejour: trip }));
   revalidatePath('/', 'layout');
+}
+
+/** Ajoute ou remplace des paramètres dans une adresse interne. */
+function withParams(path: string, params: Record<string, string>) {
+  const u = new URL(path, 'http://x');
+  Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+  return u.pathname + u.search;
+}
+
+/** Bouton « Débloquer pour 19,99 € » : enregistre la demande au prix fixé par l'admin, puis envoie vers le paiement. */
+export async function unlockPlanner(f: FormData) {
+  const me = await needMe(f);
+  const lang = langOf(f);
+  const trip = str(f, 'trip');
+  await withDb(me.id, (db) => db.query('select public.request_planner_unlock($1)', [trip]));
+  // Étape Stripe : ici, création de la session Stripe Checkout puis redirection vers la page de paiement.
+  // En attendant que le compte Stripe soit relié, la demande reste enregistrée et la fenêtre l'indique.
+  redirect(withParams(safePath(str(f, 'path'), lang), { offre: 'planificateur', sejour: trip, attente: '1' }));
 }
 
 // ---------------------------------------------------------------- Panier

@@ -27,7 +27,7 @@ Garde un petit fichier « notes » ouvert pour y coller au fur et à mesure : l'
 
    Clique sur **Create new project** et attends 2 minutes.
 3. Menu de gauche : **Database** → **Extensions**. Cherche `btree_gist` et active-le, puis cherche `pg_cron` et active-le.
-4. Menu de gauche : **SQL Editor**. Pour **chacun** des 5 fichiers du dossier `supabase/migrations`, **dans l'ordre des numéros** (100, 200, 300, 400, 500) :
+4. Menu de gauche : **SQL Editor**. Pour **chacun** des 6 fichiers du dossier `supabase/migrations`, **dans l'ordre des numéros** (100, 200, 300, 400, 500, 600) :
    1. ouvre le fichier sur ton ordinateur avec le Bloc-notes (Windows) ou TextEdit (Mac) ;
    2. sélectionne tout et copie ;
    3. dans Supabase, clique sur **+** (nouvelle requête), colle, puis clique sur **Run** ;

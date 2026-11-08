@@ -15,6 +15,7 @@ import { abs, breadcrumb, clip, pageMeta, SITE_URL } from '@/lib/seo';
 import { storageUrl } from '@/lib/supabase';
 import { getUserState } from '@/lib/user-data';
 import { toggleTripItem } from '@/app/actions';
+import { PaywallSlot } from '@/components/PaywallSlot';
 
 type P = { params: Promise<{ lang: string; dest: string; slug: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
@@ -160,6 +161,7 @@ export default async function ListingPage({ params, searchParams }: P) {
   return (
     <div className="wrap" style={{ paddingBottom: 40 }}>
       <JsonLd data={ld} />
+      <PaywallSlot lang={lang} basePath={path} sp={sp} />
       <div className="pagehead">
         <nav aria-label="breadcrumb" className="row small muted"><Link href={`/${lang}/destinations/${dest}`}>{tr(i.dest_name, lang)}</Link><span>›</span><Link href={`/${lang}/explorer?type=${i.type}&dest=${dest}&sub=${i.cat_slug}`}>{tr(i.cat_name, lang)}</Link></nav>
         <div className="row between">

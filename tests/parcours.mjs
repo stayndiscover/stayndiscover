@@ -65,6 +65,43 @@ ok(await p.locator('.cart-line').count() === 2, 'les 2 favoris non-hébergement 
 ok(await p.getByText('Autres destinations').count() === 1, 'le favori du Maroc reste à part');
 await p.screenshot({ path: `${SHOTS}/favoris.png`, fullPage: true });
 
+// 3 bis. Planificateur : essai gratuit puis fenêtre de déblocage à 19,99 €
+const tripUrl = p.url();
+const tripId = new URL(tripUrl).searchParams.get('sejour');
+ok(await p.locator('.pill.sun', { hasText: 'Essai gratuit : 2/3' }).count() === 1, 'compteur d\'essai gratuit : 2/3 activités');
+await go('/fr/destinations/martinique/jardin-de-balata');
+await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
+await p.waitForSelector('.pagehead button:has-text("Dans mon séjour")');
+ok(true, '3e activité ajoutée gratuitement depuis une fiche');
+await go('/fr/destinations/martinique/morne-larcher');
+await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
+await p.waitForSelector('dialog.paywall[open]');
+ok(await p.locator('dialog.paywall').innerText().then((t) => t.includes('19,99') && t.includes('sélection est conservée')), '4e activité : la fenêtre de déblocage à 19,99 € s\'affiche');
+await p.screenshot({ path: `${SHOTS}/paywall.png` });
+await p.getByRole('button', { name: 'Plus tard' }).click();
+await p.waitForFunction(() => !document.querySelector('dialog.paywall'));
+ok(!p.url().includes('offre='), '« Plus tard » ferme la fenêtre');
+await go(`/fr/favoris?sejour=${tripId}`);
+ok(await p.locator('.cart-line').count() === 3, 'la sélection des 3 activités est conservée');
+await p.getByRole('link', { name: 'Organiser mes journées automatiquement' }).click();
+await p.waitForSelector('dialog.paywall[open]');
+ok(true, '« Organiser mes journées » ouvre aussi la fenêtre');
+await p.getByRole('button', { name: /Débloquer pour 19,99/ }).click();
+await p.waitForSelector('dialog.paywall .notice.info');
+ok(true, 'demande de déblocage enregistrée (en attendant Stripe)');
+await p.keyboard.press('Escape');
+await p.waitForFunction(() => !document.querySelector('dialog.paywall'));
+ok(true, 'la touche Échap ferme la fenêtre');
+// le webhook Stripe confirmera le paiement ; ici on le simule côté serveur
+const { execSync } = await import('node:child_process');
+execSync(`psql -d stayndiscover -Atc "set role service_role; select public.mark_planner_unlock_paid(id) from public.planner_unlocks where trip_id = '${tripId}' and status = 'pending'"`);
+await go('/fr/destinations/martinique/morne-larcher');
+await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
+await p.waitForSelector('.pagehead button:has-text("Dans mon séjour")');
+ok(await p.locator('dialog.paywall').count() === 0, 'après paiement : 4e activité ajoutée sans fenêtre');
+await go(`/fr/favoris?sejour=${tripId}`);
+ok(await p.locator('.pill.ok', { hasText: 'Planificateur débloqué' }).count() === 1 && await p.locator('.cart-line').count() === 4, 'séjour débloqué : 4 activités, badge « débloqué »');
+
 // 4. Panier : séjour à la villa (dates libres puis dates bloquées)
 await go('/fr/destinations/martinique/villa-bois-lezard');
 await p.fill('input[name=start_date]', plus(21));

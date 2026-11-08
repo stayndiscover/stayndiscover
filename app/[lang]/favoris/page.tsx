@@ -7,6 +7,7 @@ import { searchCards } from '@/lib/catalog';
 import { withDb, rows } from '@/lib/db';
 import { fDate, isLang, translator, tr, type I18n, type Lang } from '@/lib/i18n';
 import { toggleTripItem } from '@/app/actions';
+import { PaywallSlot, plannerStatus } from '@/components/PaywallSlot';
 
 import { privateMeta } from '@/lib/seo';
 
@@ -43,6 +44,7 @@ export default async function Favoris({ params, searchParams }: { params: Promis
     favIds.length ? searchCards({ ids: favIds }) : Promise.resolve([]),
     trip?.items.length ? searchCards({ ids: trip.items }) : Promise.resolve([]),
   ]);
+  const status = trip ? await plannerStatus(me.id, trip.id) : null;
   const favSet = new Set(favIds);
   const inTrip = new Set(trip?.items ?? []);
   const forTrip = trip ? favCards.filter((c) => c.dest_slug === trip.dest_slug) : [];
@@ -60,6 +62,7 @@ export default async function Favoris({ params, searchParams }: { params: Promis
 
   return (
     <div className="wrap acct-layout">
+      <PaywallSlot lang={lang} basePath={`/${lang}/favoris`} sp={{ ...sp, sejour: sp.sejour ?? trip?.id }} />
       <AccountNav lang={lang} active="favoris" />
       <div className="stack" style={{ gap: 24 }}>
         <div className="stack" style={{ gap: 4 }}><span className="eyebrow">{t('navFav')}</span><h1 style={{ fontSize: '2rem' }}>{t('favTitle')}</h1>
@@ -95,9 +98,18 @@ export default async function Favoris({ params, searchParams }: { params: Promis
                 </div>))}
               </div>
             ) : <p className="muted small">{t('none')}</p>}
+            {status && (
+              <div className="row between" style={{ background: 'var(--accent-soft)', borderRadius: 12, padding: '10px 14px' }}>
+                {status.unlocked
+                  ? <span className="pill ok">✓ {t('unlockedBadge')}</span>
+                  : <span className="pill sun">{t('trialBadge', Math.min(status.used, status.free_items), status.free_items)}</span>}
+                {status.unlocked
+                  ? <span className="small muted">{t('plannerSoon')}</span>
+                  : <Link className="btn sm" href={`/${lang}/favoris?sejour=${trip.id}&offre=planificateur`} scroll={false}>{t('planDays')}</Link>}
+              </div>
+            )}
             {orderedTrip.some((c) => c.lat != null) && <MapView label={t('mapTitle')} height={300}
               points={orderedTrip.filter((c) => c.lat != null).map((c, n) => ({ lat: c.lat!, lng: c.lng!, label: String(n + 1), title: tr(c.title, lang), href: listingHref(lang, c) }))} />}
-            <div className="notice info">{t('plannerSoon')}</div>
           </div>
         )}
 

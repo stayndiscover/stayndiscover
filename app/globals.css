@@ -271,3 +271,14 @@ a.chip{text-decoration:none;color:inherit;display:inline-block}
   backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:background .2s,transform .2s}
 .hero-ig:hover,.hero-ig:focus-visible{background:linear-gradient(45deg,#f9a03f,#e1306c 55%,#8a3ab9);border-color:transparent;transform:translateY(-1px)}
 @media (max-width:640px){.hero-ig{top:14px;right:14px;padding:8px}.hero-ig span{display:none}}
+/* fenêtre de déblocage du planificateur */
+dialog.paywall{border:0;padding:0;border-radius:22px;max-width:460px;width:calc(100% - 32px);box-shadow:0 30px 80px rgba(5,30,28,.35);color:var(--ink);background:var(--surface)}
+dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
+.paywall-in{position:relative;display:flex;flex-direction:column;gap:12px;padding:28px 26px 22px}
+.paywall-in h2{font-size:1.5rem}
+.paywall-x{position:absolute;top:12px;right:12px}
+.paywall-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.paywall-list li{padding-left:26px;position:relative}
+.paywall-list li::before{content:"✓";position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:.75rem;font-weight:800;display:grid;place-items:center}
+.paywall-price{display:flex;align-items:baseline;gap:10px;padding:12px 14px;border-radius:14px;background:var(--accent-soft)}
+.paywall-price b{font-size:1.7rem;color:var(--accent)}
