@@ -2,10 +2,6 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
-## 2026-11-08 — Cœurs de « Mon séjour »
-- Le cœur change maintenant immédiatement au clic (affichage optimiste), sans attendre la réponse du serveur, qui peut prendre quelques secondes en ligne.
-- Le cœur est placé au-dessus de la photo et de l’étiquette de catégorie (z-index), pour que rien ne capte le clic à sa place.
-
 ## 8 novembre 2026 : catalogue de « Mon séjour » en 3 onglets (demande de Marion)
 
 Les 3 onglets, dans l'ordre :
