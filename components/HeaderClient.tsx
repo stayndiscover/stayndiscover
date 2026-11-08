@@ -23,6 +23,16 @@ export function MainNav({ items, menuLabel }: { items: NavItem[]; menuLabel: str
   );
 }
 
+/** Logo : ramène à l'accueil ; si on y est déjà, remonte en haut de la page. */
+export function LogoLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const path = usePathname();
+  return (
+    <Link className="logo" href={href} aria-label="StayNdiscover · accueil" onClick={(e) => {
+      if (path === href) { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    }}>{children}</Link>
+  );
+}
+
 export function LangSelect({ lang, label }: { lang: string; label: string }) {
   const path = usePathname();
   const router = useRouter();

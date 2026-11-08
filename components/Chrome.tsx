@@ -4,7 +4,7 @@ import type { Me } from '@/lib/auth';
 import type { Destination } from '@/lib/catalog';
 import { CartIcon, HeartIcon, InstagramIcon, UserIcon } from './Icons';
 import { INSTAGRAM_URL } from '@/lib/social';
-import { LangSelect, MainNav } from './HeaderClient';
+import { LangSelect, LogoLink, MainNav } from './HeaderClient';
 
 export function Header({ lang, me, favCount, cartCount }: { lang: Lang; me: Me | null; favCount: number; cartCount: number }) {
   const t = translator(lang);
@@ -19,12 +19,12 @@ export function Header({ lang, me, favCount, cartCount }: { lang: Lang; me: Me |
   return (
     <header className="top">
       <div className="wrap">
-        <Link className="logo" href={p} aria-label="StayNdiscover">
+        <LogoLink href={p}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="logo-sym" src="/images/logo-symbole.png" alt="" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="logo-word" src="/images/logo-nom.png" alt="StayNdiscover" />
-        </Link>
+        </LogoLink>
         <MainNav items={nav} menuLabel={t('menu')} />
         <div className="hdr-tools">
           <LangSelect lang={lang} label={t('lang')} />
