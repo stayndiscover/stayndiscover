@@ -60,7 +60,7 @@ section.block{padding:56px 0}
 .price{font-weight:700;font-family:var(--display);font-size:1.1rem}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:.86rem;font-weight:600;color:var(--muted)}
-input[type=text],input[type=email],input[type=password],input[type=tel],input[type=number],input[type=date],input[type=time],input[type=url],select,textarea{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;min-width:0;width:100%;color:var(--ink)}
+input[type=text],input[type=search],input[type=email],input[type=password],input[type=tel],input[type=number],input[type=date],input[type=time],input[type=url],select,textarea{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;min-width:0;width:100%;color:var(--ink)}
 textarea{min-height:90px;resize:vertical}
 .form{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
 .form .full{grid-column:1/-1}
