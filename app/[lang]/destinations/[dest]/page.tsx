@@ -53,7 +53,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ la
           <h1>{tr(d.name, lang)}</h1>
           <p className="sub">{tr(d.description, lang)}</p>
           <div className="row">
-            <Link className="btn sun" href={`/${lang}/sejour?nouveau=1&dest=${d.slug}`}>{t('planBtn')}</Link>
+            <Link className="btn sun" href={`/${lang}/sejour/nouveau?dest=${d.slug}`}>{t('planBtn')}</Link>
             <span className="small">{items.length} {t('listings')}</span>
           </div>
         </div>

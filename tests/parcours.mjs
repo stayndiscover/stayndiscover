@@ -51,56 +51,104 @@ for (const u of ['/fr/destinations/martinique/dauphins-et-snorkeling-a-l-anse-no
 }
 ok(await p.locator('header .badge').first().innerText() === '4', 'compteur de favoris = 4');
 
-// 3. Création d'un séjour → redirection vers les favoris
+// 3. Planificateur, phase 1 : questionnaire progressif (séjour fictif de test, 7 nuits en Martinique)
 await go('/fr/sejour');
-await p.selectOption('select[name=destination]', 'martinique');
-await p.fill('input[name=start_date]', plus(40));
-await p.fill('input[name=end_date]', plus(47));
+await p.getByRole('link', { name: /Créer un séjour/ }).first().click();
+await p.waitForURL('**/sejour/nouveau');
+const next = () => p.getByRole('button', { name: /Suivant/ }).click();
+await next();
+ok(await p.locator('.wizard .notice.bad').count() === 1, 'questionnaire : impossible de passer sans destination');
+await p.locator('.wz-dest', { hasText: 'Martinique' }).click();
+await p.fill('input[name=title]', 'Séjour fictif de test');
+await next();
+await p.fill('input[name=start_date]', plus(40)); await p.fill('input[name=end_date]', plus(47));
 await p.fill('input[name=arrival_time]', '14:30');
-await p.fill('textarea[name=preferences]', 'Plages, nature');
+ok(await p.locator('.wz-pane:not([hidden]) .notice.ok').innerText().then((x) => x.includes('7 nuit')), 'questionnaire : 7 nuits calculées automatiquement');
+await next();
+await p.getByLabel('Oui, réservé ailleurs').check();
+await next();
+ok(await p.locator('.wizard .notice.bad').count() === 1, 'questionnaire : nom et adresse exigés pour un hébergement réservé ailleurs');
+await p.fill('input[name=ext_acc_name]', 'Gîte de test'); await p.fill('input[name=ext_acc_address]', 'Sainte-Anne, Martinique');
+await p.fill('input[name=ext_gps]', 'pas des coordonnées');
+await next();
+ok(await p.locator('.wizard .notice.bad').innerText().then((x) => x.includes('GPS')), 'questionnaire : coordonnées GPS invalides refusées');
+await p.fill('input[name=ext_gps]', '14.4432, -60.8857'); await p.fill('input[name=ext_check_in]', '15:00');
+await next();
+await p.fill('input[name=children]', '2');
+await p.locator('select[name=child_age]').nth(1).selectOption('11');
+ok(await p.locator('.wz-pane:not([hidden])').innerText().then((x) => x.includes('4 voyageur')), 'questionnaire : âges des enfants et total des voyageurs');
+await next();
+await p.locator('label.chip', { hasText: 'Plages et détente' }).click();
+await p.locator('label.chip', { hasText: 'Plongée' }).click();
+await next();
+await p.locator('label.wz-pace', { hasText: 'Détente' }).click();
+await p.fill('input[name=budget]', '2500');
+await next();
+ok(await p.locator('.wz-pane:not([hidden])').innerText().then((x) => x.includes('Gîte de test') && x.includes('Plongée')), 'questionnaire : récapitulatif complet');
+await p.screenshot({ path: `${SHOTS}/questionnaire.png`, fullPage: true });
 await p.getByRole('button', { name: 'Créer mon séjour' }).click();
-await p.waitForURL('**/favoris?sejour=*');
-ok(await p.locator('.notice.ok').innerText().then((t) => t.includes('Séjour enregistré')), 'séjour enregistré, redirection vers les favoris');
-ok(await p.locator('.cart-line').count() === 2, 'les 2 favoris non-hébergement de Martinique sont dans le séjour');
-ok(await p.getByText('Autres destinations').count() === 1, 'le favori du Maroc reste à part');
-await p.screenshot({ path: `${SHOTS}/favoris.png`, fullPage: true });
+await p.waitForURL(/\/fr\/sejour\/[0-9a-f-]{36}\?nouveau=1/);
+const tripId = p.url().match(/sejour\/([0-9a-f-]{36})/)[1];
+ok(await p.locator('.notice.ok').innerText().then((x) => x.includes('créé')), 'séjour créé et enregistré, redirection vers « Mon séjour »');
+ok(await p.locator('#selection .cart-line').count() === 2, 'les 2 favoris non-hébergement de Martinique sont dans le séjour');
+ok(await p.locator('ol.prog li').count() === 6, 'indicateur de progression en 6 étapes');
+ok(await p.locator('#infos').innerText().then((x) => x.replace(/\s/g, ' ').includes('Gîte de test') && x.includes('11 ans') && x.replace(/\s/g, ' ').includes('2 500')), 'informations générales enregistrées (hébergement, âges, budget)');
+ok(await p.locator('#planning').innerText().then((x) => x.includes('2/5')), 'essai gratuit : 2/5 activités');
+await p.screenshot({ path: `${SHOTS}/mon-sejour.png`, fullPage: true });
+await go(`/fr/favoris?sejour=${tripId}`);
+ok(await p.getByText('Autres destinations').count() === 1, 'favoris : le favori du Maroc reste à part');
 
-// 3 bis. Planificateur : essai gratuit puis fenêtre de déblocage à 19,99 €
-const tripUrl = p.url();
-const tripId = new URL(tripUrl).searchParams.get('sejour');
-ok(await p.locator('.pill.sun', { hasText: 'Essai gratuit : 2/3' }).count() === 1, 'compteur d\'essai gratuit : 2/3 activités');
-await go('/fr/destinations/martinique/jardin-de-balata');
-await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
-await p.waitForSelector('.pagehead button:has-text("Dans mon séjour")');
-ok(true, '3e activité ajoutée gratuitement depuis une fiche');
+// 3 bis. 5 activités gratuites, puis 19,99 € au clic sur « Planifier mon voyage » (décision de Marion)
+for (const slug of ['jardin-de-balata', 'anse-noire', 'grand-marche-de-fort-de-france']) {
+  await go(`/fr/destinations/martinique/${slug}`);
+  await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
+  await p.waitForSelector('.pagehead button:has-text("Dans mon séjour")');
+}
+ok(true, '3 activités de plus ajoutées gratuitement (5/5)');
 await go('/fr/destinations/martinique/morne-larcher');
 await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
 await p.waitForSelector('dialog.paywall[open]');
-ok(await p.locator('dialog.paywall').innerText().then((t) => t.includes('19,99') && t.includes('sélection est conservée')), '4e activité : la fenêtre de déblocage à 19,99 € s\'affiche');
-await p.screenshot({ path: `${SHOTS}/paywall.png` });
+ok(await p.locator('dialog.paywall').innerText().then((x) => x.includes('19,99') && x.includes('sélection est conservée')), '6e activité : la fenêtre de déblocage à 19,99 € s\'affiche');
 await p.getByRole('button', { name: 'Plus tard' }).click();
 await p.waitForFunction(() => !document.querySelector('dialog.paywall'));
-ok(!p.url().includes('offre='), '« Plus tard » ferme la fenêtre');
-await go(`/fr/favoris?sejour=${tripId}`);
-ok(await p.locator('.cart-line').count() === 3, 'la sélection des 3 activités est conservée');
-await p.getByRole('link', { name: 'Organiser mes journées automatiquement' }).click();
+await go(`/fr/sejour/${tripId}`);
+ok(await p.locator('#selection .cart-line').count() === 5, 'la sélection des 5 activités est conservée');
+await p.locator('#planning').getByRole('button', { name: /Planifier mon voyage/ }).click();
 await p.waitForSelector('dialog.paywall[open]');
-ok(true, '« Organiser mes journées » ouvre aussi la fenêtre');
+ok(true, '« Planifier mon voyage » demande le paiement de 19,99 €');
+await p.screenshot({ path: `${SHOTS}/paywall.png` });
 await p.getByRole('button', { name: /Débloquer pour 19,99/ }).click();
 await p.waitForSelector('dialog.paywall .notice.info');
 ok(true, 'demande de déblocage enregistrée (en attendant Stripe)');
 await p.keyboard.press('Escape');
 await p.waitForFunction(() => !document.querySelector('dialog.paywall'));
-ok(true, 'la touche Échap ferme la fenêtre');
-// le webhook Stripe confirmera le paiement ; ici on le simule côté serveur
 const { execSync } = await import('node:child_process');
 execSync(`psql -d stayndiscover -Atc "set role service_role; select public.mark_planner_unlock_paid(id) from public.planner_unlocks where trip_id = '${tripId}' and status = 'pending'"`);
+await go(`/fr/sejour/${tripId}`);
+await p.locator('#planning').getByRole('button', { name: /Planifier mon voyage/ }).click();
+await p.waitForURL('**planning=bientot**');
+ok(await p.locator('dialog.paywall').count() === 0 && await p.locator('.notice.info', { hasText: 'Planificateur débloqué' }).count() === 1, 'après paiement : pas de fenêtre, le planning est annoncé (phase 3)');
 await go('/fr/destinations/martinique/morne-larcher');
 await p.getByRole('button', { name: /Ajouter à mon séjour/ }).click();
 await p.waitForSelector('.pagehead button:has-text("Dans mon séjour")');
-ok(await p.locator('dialog.paywall').count() === 0, 'après paiement : 4e activité ajoutée sans fenêtre');
-await go(`/fr/favoris?sejour=${tripId}`);
-ok(await p.locator('.pill.ok', { hasText: 'Planificateur débloqué' }).count() === 1 && await p.locator('.cart-line').count() === 4, 'séjour débloqué : 4 activités, badge « débloqué »');
+ok(await p.locator('dialog.paywall').count() === 0, 'après paiement : 6e activité ajoutée sans fenêtre');
+
+// 3 ter. Modifier, archiver et désarchiver le séjour
+await go(`/fr/sejour/${tripId}/modifier`);
+await p.locator('.wz-steps button', { hasText: 'Voyageurs' }).isDisabled();
+for (let i = 0; i < 3; i++) await next();
+await p.fill('input[name=adults]', '3');
+for (let i = 0; i < 3; i++) await next();
+await p.getByRole('button', { name: 'Enregistrer les modifications' }).click();
+await p.waitForURL('**modifie=1');
+ok(await p.locator('#infos').innerText().then((x) => x.includes('3 adulte')), 'modification du séjour enregistrée (3 adultes)');
+await p.getByRole('button', { name: 'Archiver' }).click();
+await p.waitForURL((u) => u.pathname === '/fr/sejour');
+ok(await p.locator('details summary', { hasText: 'Séjours archivés (1)' }).count() === 1, 'séjour archivé, rangé à part');
+await go(`/fr/sejour/${tripId}`);
+await p.getByRole('button', { name: 'Désarchiver' }).click();
+await p.waitForURL((u) => u.pathname === '/fr/sejour');
+ok(await p.locator('details summary').count() === 0, 'séjour désarchivé');
 
 // 4. Panier : séjour à la villa (dates libres puis dates bloquées)
 await go('/fr/destinations/martinique/villa-bois-lezard');
@@ -182,6 +230,15 @@ await go(`/fr/explorer?dest=martinique&in=${plus(60)}&out=${plus(63)}&tr=2&type=
 ok(await p.locator('.card', { hasText: 'Villa Bois-Lézard' }).locator('.pill.ok').count() === 1, 'recherche avec dates : villa disponible ailleurs');
 await go('/fr/explorer?q=plong');
 ok(await p.locator('.card').count() >= 2, 'recherche texte « plong »');
+
+// 10 bis. Proposition discrète du planificateur après 3 fiches (visiteur)
+const pv = await (await b.newContext({ viewport: { width: 1280, height: 800 }, locale: 'fr-FR' })).newPage();
+for (const slug of ['plage-des-salines', 'anse-noire', 'jardin-de-balata']) await pv.goto(`${BASE}/fr/destinations/martinique/${slug}`, { waitUntil: 'networkidle' });
+await pv.waitForSelector('aside.nudge', { timeout: 5000 }).catch(() => {});
+ok(await pv.locator('aside.nudge').count() === 1, 'proposition du planificateur après 3 fiches consultées');
+await pv.getByRole('button', { name: 'Continuer ma recherche' }).click();
+await pv.goto(`${BASE}/fr/destinations/martinique/morne-larcher`, { waitUntil: 'networkidle' }); await pv.waitForTimeout(2000);
+ok(await pv.locator('aside.nudge').count() === 0, 'la proposition ne revient pas aussitôt (pas intrusive)');
 
 // 11. Explorer : la liste se met à jour toute seule, sans bouton « Rechercher »
 await go('/fr/explorer');

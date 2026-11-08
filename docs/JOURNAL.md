@@ -1,0 +1,34 @@
+# Journal des modifications
+
+Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
+
+## 8 novembre 2026 : planificateur, phase 1 (création du séjour et espace « Mon séjour »)
+
+**Base de données** (migration 7, `mise-a-jour-7-sejour.sql`, à exécuter une fois dans Supabase) :
+- `trips` : hébergement (StayNdiscover, réservé ailleurs avec nom, adresse, GPS, check-in et check-out, à trouver, indécis), âges des enfants, transport, régions ou étapes, envies (19 choix), temps libre, jours d'activité, budget par personne ou pour le groupe, archivage, nombre de nuits calculé ;
+- `trip_items` : type d'étape, heure de fin, participants, distance et mode de trajet, statut (préparation des phases 3 et 4) ;
+- nouvelles tables `trip_days` (journées, itinéraires) et `travel_times` (cache Google Routes), protégées par RLS ;
+- 6 catégories ajoutées : distillerie, musée et monument, site naturel, activité familiale, excursion terrestre, hébergement insolite ;
+- décision de Marion : **5 activités gratuites par séjour**, puis 19,99 € demandés au clic sur « Planifier mon voyage ».
+
+**Site :**
+- menu « Planifier mon séjour » ; section d'accueil « Préparez votre voyage avec StayNdiscover » avec le texte du cahier des charges ;
+- questionnaire progressif en 7 étapes (`/sejour/nouveau`), réutilisé pour la modification (`/sejour/<id>/modifier`) ;
+- espace « Mon séjour » (`/sejour/<id>`) :
+  - indicateur de progression en 6 étapes et bouton « Planifier mon voyage » ;
+  - informations générales ;
+  - hébergements libres sur toutes les nuits pour la taille du groupe (vérification réelle) ;
+  - sélection et carte, favoris à ajouter, suggestions selon les envies ;
+  - archivage ;
+- liste « Mes séjours » avec les séjours archivés rangés à part ;
+- proposition discrète du planificateur après 3 fiches consultées, au plus une fois par mois et jamais si un séjour existe déjà.
+
+**Tests :**
+- 15 vérifications SQL ajoutées (`supabase/tests/40_sejour.sql`) ;
+- parcours navigateur porté à 55 vérifications, avec un séjour fictif de test de 7 nuits en Martinique.
+
+**Pas encore fait (phases suivantes) :**
+- moteur de planification (phase 3) ;
+- Google Maps et itinéraires (phase 4, compte Google Cloud requis) ;
+- paiement Stripe (phase 5) ;
+- carnet PDF (phase 6).

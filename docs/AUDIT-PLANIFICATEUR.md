@@ -110,3 +110,24 @@ Audit réalisé le 8 novembre 2026, avant tout développement, comme le demande 
 | **F. Réservation et paiement** | Depuis le planning, avec Stripe | Compte Stripe |
 
 Chaque phase est testée de bout en bout avant d'être mise en ligne.
+
+## Complément : sections 7.6 à 18 (reçues ensuite)
+
+| Section | Constat | Décision |
+| --- | --- | --- |
+| 7.6 Nombreuses étapes | Google Maps limite le nombre d'étapes par lien d'itinéraire | Découpage en segments successifs (départ du segment suivant = arrivée du précédent), vue globale de la journée conservée dans StayNdiscover |
+| 7.7 Moyens de transport | Aucun choix aujourd'hui | Voiture, marche, vélo, transports en commun (selon les données Google disponibles). Bateau et transferts saisis à part, jamais remplacés par un faux trajet routier |
+| 7.8 Actualisation | Pas d'itinéraire stocké | Itinéraire et lien Google Maps enregistrés par jour (`trip_days`), recalculés après chaque modification |
+| 8 Calendrier, journée, carte, budget | Seule la carte de la sélection existe | 4 vues dans « Mon séjour ». Le budget distingue les dépenses confirmées, estimées et gratuites |
+| 9.1 et 9.2 Panier | Existe : multi-prestataires, revérifié | À ajouter : bouton « Ajouter au panier » depuis le planning, conditions d'annulation et statut affichés sur chaque ligne |
+| 9.3 Stripe Connect | Base prête (commission, reversements, remboursements, historique), Stripe non branché | Phase 5. Rappel : depuis la France, Stripe ne reverse pas automatiquement au Maroc ni au Belize (virement manuel prévu) |
+| 9.4 FareHarbor | Clés API seulement après un accord de partenariat (vérifié en novembre 2026) | Créneaux saisis dans StayNdiscover ; structure `calendar_connections` prête pour une future connexion |
+| 9.5 Amenitiz | Aucune API publique trouvée | iCal (déjà prêt), saisie manuelle |
+| 9.6 Airbnb et Booking | API réservées aux partenaires | iCal dans les deux sens (déjà prêt dans la base) |
+| 9.7 Prestataires sans API | La base gère déjà calendriers, capacités et créneaux | Écrans de l'espace prestataire à construire |
+| 10 Mon séjour | Partiel | Phase 1, ajouts : modifier, **archiver**, indicateur de progression |
+| 11 Carnet PDF | Absent | Phase 6 |
+| 12 Administration | Base et droits prêts, écrans absents | À construire. Les paramètres du moteur (§ 12.4) seront stockés dans la table `settings` existante |
+| 13 Architecture | Le cahier des charges cite WeWeb | **Décision déjà prise avec Marion : Next.js sur Vercel à la place de WeWeb** (voir `CLAUDE-REPRISE.md`). Le reste est identique : Supabase, Stripe, Google Maps |
+| 13.1 Données | Correspondances : stays → `trips` ; itineraries, itinerary_days et itinerary_items → `trips`, `trip_days` (nouvelle) et `trip_items` ; travel_routes → `travel_times` (nouvelle) ; carts → `cart_items` ; payments, commissions et provider_payouts → `payments`, `orders.commission_total` et `payouts` ; activity_slots → `excursion_slots` ; booking_participants → `bookings` (adultes et enfants) ; itinerary_documents → stockage `documents` | Aucune table en double |
+| 16 Scénario de test | — | Séjour fictif de 7 jours en Martinique, clairement identifié, joué automatiquement à chaque phase |

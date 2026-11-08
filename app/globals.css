@@ -338,3 +338,47 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
 .side-logout{width:100%;text-align:left;padding:9px 12px;border-radius:10px;background:none;border:0;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
 .side-logout:hover{background:#fae3e0;color:var(--bad)}
 @media (max-width:820px){.side-logout{white-space:nowrap}}
+
+/* ---------- Planificateur : questionnaire du séjour ---------- */
+.wizard{gap:18px}
+.wz-steps{list-style:none;margin:0;padding:0;display:flex;gap:6px;overflow-x:auto}
+.wz-steps li{flex:1;min-width:0}
+.wz-steps button{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;border-bottom:3px solid var(--line);padding:6px 4px 10px;font:inherit;color:var(--muted);cursor:pointer;text-align:left}
+.wz-steps button:disabled{cursor:default}
+.wz-steps .n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-weight:800;font-size:.85rem}
+.wz-steps .l{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wz-steps li.on button{border-color:var(--accent);color:var(--ink)}.wz-steps li.on .n{background:var(--accent);color:#fff}
+.wz-steps li.done button{border-color:var(--accent-soft);color:var(--ink)}.wz-steps li.done .n{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:760px){.wz-steps .l{display:none}.wz-steps li.on .l{display:inline}}
+.wz-pane h2{font-size:1.35rem}
+.wz-dests{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.wz-dest{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;cursor:pointer;border:3px solid transparent;background:#0d3c37}
+.wz-dest img{width:100%;height:100%;object-fit:cover;display:block;opacity:.85}
+.wz-dest span{position:absolute;left:12px;bottom:10px;color:#fff;font-weight:800;font-size:1.15rem;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.wz-dest input{position:absolute;opacity:0}
+.wz-dest.on{border-color:var(--sun)}.wz-dest:focus-within{outline:3px solid var(--sun);outline-offset:2px}
+.wz-col{flex-direction:column}
+.wz-paces{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:640px){.wz-paces{grid-template-columns:1fr}}
+.wz-pace{border:2px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;cursor:pointer}
+.wz-pace input{position:absolute;opacity:0}
+.wz-pace.on{border-color:var(--accent);background:var(--accent-soft)}.wz-pace:focus-within{outline:3px solid var(--sun)}
+label.chip{cursor:pointer;user-select:none}
+label.chip:focus-within{outline:3px solid var(--sun);outline-offset:2px}
+
+/* ---------- Planificateur : espace « Mon séjour » ---------- */
+.prog{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media (max-width:900px){.prog{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:520px){.prog{grid-template-columns:repeat(2,1fr)}}
+.prog li a,.prog li span.p{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);text-decoration:none;color:var(--ink);height:100%}
+.prog li a:hover{border-color:var(--accent)}
+.prog .k{font-weight:700;font-size:.92rem}.prog .s{font-size:.78rem;color:var(--muted)}
+.prog li.done a{border-color:var(--accent);background:var(--accent-soft)}
+.prog li.soon span.p{opacity:.6}
+.plan-cta{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--ink);color:#fff;border-radius:18px;padding:20px 22px}
+.plan-cta p{color:#c9d8d5;margin:4px 0 0}
+.nudge{position:fixed;right:20px;bottom:20px;z-index:60;max-width:340px;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(5,30,28,.22);padding:16px 18px;display:flex;flex-direction:column;gap:8px;animation:nudge-in .4s ease-out}
+@keyframes nudge-in{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:520px){.nudge{left:12px;right:12px;bottom:12px;max-width:none}}
+@media (prefers-reduced-motion:reduce){.nudge{animation:none}}
+[hidden]{display:none!important}

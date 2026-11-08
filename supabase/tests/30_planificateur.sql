@@ -22,13 +22,17 @@ begin
   raise notice 'OK  %', label;
 end $$;
 
+-- Ces scénarios testent le mécanisme avec une limite de 3 (la migration 7 la porte à 5 ; on la remet ensuite)
+select set_config('test.free_items_before', (select value::text from settings where key = 'planner_free_items'), false);
+update settings set value = '3' where key = 'planner_free_items';
+
 -- 4 lieux de plus en Martinique (pour dépasser l'essai gratuit)
 insert into listings (destination_id, category_id, type, slug, status, title, google_place_id)
 select d.id, c.id, 'lieu', 'lieu-test-' || n, 'published', jsonb_build_object('fr', 'Lieu ' || n), 'ChIJ-' || n
   from destinations d, categories c, generate_series(1, 4) n where d.slug = 'martinique' and c.slug = 'plage';
 
 select pg_temp.ok((select public.setting_num('planner_price', 0)) = 19.99 and public.setting_num('planner_free_items', 0) = 3,
-  'réglages : 19,99 € et 3 activités gratuites par séjour');
+  'réglages : 19,99 € et limite d''essai appliquée');
 
 -- Client C : crée un séjour et ajoute des activités
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000c3');
@@ -82,4 +86,5 @@ select set_config('stayndiscover.trip_creation', '', false);
 select pg_temp.ok((select count(*) from trip_items i join trips t on t.id = i.trip_id where t.start_date = '2027-09-01') = 4, 'création : 4 favoris repris malgré la limite de 3');
 reset role;
 
+update settings set value = current_setting('test.free_items_before')::jsonb where key = 'planner_free_items';
 \echo '==> Planificateur : tous les scénarios sont passés.'

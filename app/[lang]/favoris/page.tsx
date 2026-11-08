@@ -75,11 +75,11 @@ export default async function Favoris({ params, searchParams }: { params: Promis
               <Link key={x.id} className={`chip ${x.id === trip?.id ? 'on' : ''}`} href={`/${lang}/favoris?sejour=${x.id}`}>
                 {tr(x.dest_name, lang)} · {fDate(x.start_date, lang, { day: 'numeric', month: 'short' })}
               </Link>))}
-              <Link className="chip" href={`/${lang}/sejour#nouveau`}>＋ {t('newStay')}</Link>
+              <Link className="chip" href={`/${lang}/sejour/nouveau`}>＋ {t('newStay')}</Link>
             </div>
           </div>
         ) : (
-          <div className="notice info row between"><span>{t('noTripYet')}</span><Link className="btn sm" href={`/${lang}/sejour`}>{t('newStay')}</Link></div>
+          <div className="notice info row between"><span>{t('noTripYet')}</span><Link className="btn sm" href={`/${lang}/sejour/nouveau`}>{t('newStay')}</Link></div>
         )}
 
         {trip && (
@@ -105,7 +105,7 @@ export default async function Favoris({ params, searchParams }: { params: Promis
                   : <span className="pill sun">{t('trialBadge', Math.min(status.used, status.free_items), status.free_items)}</span>}
                 {status.unlocked
                   ? <span className="small muted">{t('plannerSoon')}</span>
-                  : <Link className="btn sm" href={`/${lang}/favoris?sejour=${trip.id}&offre=planificateur`} scroll={false}>{t('planDays')}</Link>}
+                  : <Link className="btn sm" href={`/${lang}/sejour/${trip.id}#planning`}>{t('planVoyage')}</Link>}
               </div>
             )}
             {orderedTrip.some((c) => c.lat != null) && <MapView label={t('mapTitle')} height={300}

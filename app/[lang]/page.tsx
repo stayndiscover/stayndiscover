@@ -85,7 +85,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           <span className="eyebrow" style={{ color: 'var(--sun)' }}>{t('navPlan')}</span><h2>{t('planTitle')}</h2>
           <p className="muted">{t('planText')}</p>
           <ol className="muted small" style={{ margin: 0, paddingLeft: 18 }}>{t('planSteps').split('|').map((x) => <li key={x}>{x}</li>)}</ol>
-          <Link className="btn sun" href={`${p}/sejour`} style={{ alignSelf: 'flex-start' }}>{t('planBtn')}</Link>
+          <Link className="btn sun" href={`${p}/sejour/nouveau`} style={{ alignSelf: 'flex-start' }}>{t('planBtn')}</Link>
         </div>
         <div className="mini-plan">
           <span className="small" style={{ color: '#b9c9c6' }}>{t('exampleDay')}</span>

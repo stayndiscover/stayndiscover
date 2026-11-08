@@ -96,27 +96,66 @@ export async function toggleFavorite(f: FormData) {
 }
 
 // ---------------------------------------------------------------- Séjours
-export async function createTrip(_: FormState, f: FormData): Promise<FormState> {
+const PREF_KEYS = ['plages','excursions-terrestres','nautique','bateau','plongee','dauphins','randonnees','nature','gastronomie',
+  'restaurants','marches','culture','musees','distilleries','famille','sport','spots-photo','points-de-vue','insolite'];
+const isTime = (x: string) => /^\d{2}:\d{2}$/.test(x);
+const isDay = (x: string) => /^\d{4}-\d{2}-\d{2}$/.test(x);
+
+/** Questionnaire du séjour (création ou modification) : tout est vérifié puis enregistré dans Supabase. */
+export async function saveTrip(_: FormState, f: FormData): Promise<FormState> {
   const me = await needMe(f);
   const lang = langOf(f);
+  const tripId = str(f, 'trip');
   const start = str(f, 'start_date'), end = str(f, 'end_date');
-  if (!start || !end || end < start) return { error: t(lang, 'errDates') };
-  const time = (k: string) => str(f, k) || null;
+  if (!str(f, 'destination')) return { error: t(lang, 'errRequired') };
+  if (!isDay(start) || !isDay(end) || end <= start) return { error: t(lang, 'errDates') };
+  const mode = ['staynd', 'elsewhere', 'find', 'undecided'].includes(str(f, 'accommodation_mode')) ? str(f, 'accommodation_mode') : 'undecided';
+  let lat: number | null = null, lng: number | null = null;
+  if (mode === 'elsewhere') {
+    if (!str(f, 'ext_acc_name') || !str(f, 'ext_acc_address')) return { error: t(lang, 'errRequired') };
+    const gps = str(f, 'ext_gps');
+    if (gps) {
+      const m = gps.match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)\s*$/);
+      if (!m || Math.abs(+m[1]) > 90 || Math.abs(+m[2]) > 180) return { error: t(lang, 'errGps') };
+      lat = +m[1]; lng = +m[2];
+    }
+  }
+  if (mode === 'staynd' && !str(f, 'accommodation_id')) return { error: t(lang, 'errRequired') };
+  const adults = Math.max(1, Math.min(30, Number(str(f, 'adults')) || 1));
+  const ages = f.getAll('child_age').map(Number).filter((x) => Number.isInteger(x) && x >= 0 && x <= 17).slice(0, 30);
+  const prefs = f.getAll('prefs').map(String).filter((x) => PREF_KEYS.includes(x));
+  const weekdays = f.getAll('weekdays').map(Number).filter((x) => x >= 0 && x <= 6);
+  const time = (k: string) => (isTime(str(f, k)) ? str(f, k) : null);
+  const actStart = time('activity_start') ?? '09:00', actEnd = time('activity_end') ?? '19:00';
+  if (actEnd <= actStart) return { error: t(lang, 'errDates') };
+  const values = [
+    str(f, 'destination'), str(f, 'title').slice(0, 120) || null, start, end, time('arrival_time'), time('departure_time'), adults, ages.length,
+    mode === 'staynd' ? str(f, 'accommodation_id') : null, actStart, actEnd,
+    ['calm', 'balanced', 'intense'].includes(str(f, 'pace')) ? str(f, 'pace') : 'balanced', str(f, 'budget') ? Math.max(0, Number(str(f, 'budget'))) : null,
+    mode, mode === 'elsewhere' ? str(f, 'ext_acc_name').slice(0, 200) : null, mode === 'elsewhere' ? str(f, 'ext_acc_address').slice(0, 500) : null, lat, lng,
+    mode === 'elsewhere' ? time('ext_check_in') : null, mode === 'elsewhere' ? time('ext_check_out') : null, ages,
+    str(f, 'transport_info').slice(0, 1000) || null, str(f, 'regions').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 20),
+    prefs, Math.max(0, Math.min(720, Number(str(f, 'free_time_min')) || 0)), weekdays.length ? weekdays : [0, 1, 2, 3, 4, 5, 6],
+    str(f, 'budget_scope') === 'person' ? 'person' : 'group',
+  ];
+  const cols = `destination_id = (select id from public.destinations where slug = $1), title = $2, start_date = $3, end_date = $4, arrival_time = $5,
+    departure_time = $6, adults = $7, children = $8, accommodation_id = nullif($9, '')::uuid, activity_start = $10, activity_end = $11,
+    pace = $12::public.trip_pace, budget = $13, accommodation_mode = $14, ext_acc_name = $15, ext_acc_address = $16, ext_acc_lat = $17,
+    ext_acc_lng = $18, ext_check_in = $19, ext_check_out = $20, children_ages = $21, transport_info = $22, regions = $23,
+    preference_keys = $24, free_time_min = $25, active_weekdays = $26, budget_scope = $27, updated_at = now()`;
   let id: string;
   try {
     id = await withDb(me.id, async (db) => {
-      const trip = await one<{ id: string; destination_id: string }>(db, `insert into public.trips
-          (user_id, destination_id, start_date, end_date, arrival_time, departure_time, adults, children, accommodation_id,
-           activity_start, activity_end, pace, budget, preferences)
-        values ($1, (select id from public.destinations where slug = $2), $3, $4, $5, $6, $7, $8, nullif($9, '')::uuid,
-                coalesce($10::time, '09:00'), coalesce($11::time, '19:00'), $12::public.trip_pace, nullif($13, '')::numeric, nullif($14, ''))
-        returning id, destination_id`,
-        [me.id, str(f, 'destination'), start, end, time('arrival_time'), time('departure_time'), Math.max(1, Number(str(f, 'adults')) || 1),
-          Math.max(0, Number(str(f, 'children')) || 0), str(f, 'accommodation_id'), time('activity_start'), time('activity_end'),
-          ['calm', 'balanced', 'intense'].includes(str(f, 'pace')) ? str(f, 'pace') : 'balanced', str(f, 'budget'), str(f, 'preferences')]);
+      if (tripId) {
+        const r = await one<{ id: string }>(db, `update public.trips set ${cols} where id = $28 and user_id = $29 returning id`, [...values, tripId, me.id]);
+        if (!r) throw new Error('FORBIDDEN: séjour inconnu');
+        return r.id;
+      }
+      const trip = await one<{ id: string; destination_id: string }>(db, `insert into public.trips (user_id, destination_id, start_date, end_date)
+        values ($1, (select id from public.destinations where slug = $2), $3, $4) returning id, destination_id`, [me.id, values[0], start, end]);
       if (!trip) throw new Error('INVALID: destination');
-      // Comme prévu au cahier des charges : les favoris de cette destination rejoignent le séjour
-      // (même au-delà de l'essai gratuit du planificateur : la sélection n'est jamais perdue)
+      await db.query(`update public.trips set ${cols} where id = $28 and user_id = $29`, [...values, trip.id, me.id]);
+      // Comme prévu : les favoris de cette destination rejoignent le séjour (même au-delà de l'essai gratuit)
       await db.query(`select set_config('stayndiscover.trip_creation', 'on', true)`);
       await db.query(`insert into public.trip_items (trip_id, listing_id, sort_order)
         select $1, f.listing_id, row_number() over (order by f.created_at) from public.favorites f
@@ -129,7 +168,26 @@ export async function createTrip(_: FormState, f: FormData): Promise<FormState> 
     return { error: dbMessage(e) || t(lang, 'errGeneric') };
   }
   revalidatePath('/', 'layout');
-  redirect(`/${lang}/favoris?sejour=${id}&nouveau=1`);
+  redirect(`/${lang}/sejour/${id}?${tripId ? 'modifie' : 'nouveau'}=1`);
+}
+
+export async function setTripArchived(f: FormData) {
+  const me = await needMe(f);
+  await withDb(me.id, (db) => db.query('select public.set_trip_archived($1, $2)', [str(f, 'trip'), str(f, 'archived') === '1']));
+  revalidatePath('/', 'layout');
+  redirect(`/${langOf(f)}/sejour`);
+}
+
+/** « Planifier mon voyage » : demande les 19,99 € si le séjour n'est pas débloqué (décision de Marion). */
+export async function planVoyage(f: FormData) {
+  const me = await needMe(f);
+  const lang = langOf(f);
+  const trip = str(f, 'trip');
+  const st = await withDb(me.id, (db) => one<{ s: { unlocked: boolean } }>(db, 'select public.planner_status($1) as s', [trip]));
+  const path = `/${lang}/sejour/${trip}`;
+  if (!st?.s.unlocked) redirect(withParams(path, { offre: 'planificateur', sejour: trip }));
+  // Phase 3 : ici, lancement du moteur de planification
+  redirect(withParams(path, { planning: 'bientot' }) + '#planning');
 }
 
 export async function deleteTrip(f: FormData) {
@@ -166,7 +224,7 @@ export async function toggleTripItem(f: FormData) {
     }
     return true;
   });
-  if (!ok) redirect(`/${lang}/sejour?nouveau=1&dest=${encodeURIComponent(str(f, 'dest'))}`);
+  if (!ok) redirect(`/${lang}/sejour/nouveau?dest=${encodeURIComponent(str(f, 'dest'))}`);
   if (paywall) redirect(withParams(safePath(str(f, 'path'), lang), { offre: 'planificateur', sejour: trip }));
   revalidatePath('/', 'layout');
 }
