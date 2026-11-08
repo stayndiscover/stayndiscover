@@ -330,3 +330,8 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
   .hero .slide img{animation:none!important}
   .hero .fx{display:none}
 }
+/* vidéo de la bannière : par-dessus la photo, qui reste en secours pendant le chargement */
+.hero .slide-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s}
+.hero .slide.on .slide-video,.hero .slide.out .slide-video{opacity:1}
+.hero .slide.has-video img{animation:none!important;transform:none}
+.hero .slide.has-video .fx{display:none}

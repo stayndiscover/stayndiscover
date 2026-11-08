@@ -8,6 +8,7 @@ import { getUserState } from '@/lib/user-data';
 import { isLang, translator, tr, type Lang } from '@/lib/i18n';
 import { countryLabel } from '@/lib/country';
 import { INSTAGRAM_URL, SOCIAL_URLS } from '@/lib/social';
+import { heroVideo } from '@/lib/hero-videos';
 import { JsonLd } from '@/components/JsonLd';
 import { abs, pageMeta, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { t as tt } from '@/lib/i18n';
@@ -57,7 +58,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     <>
       <JsonLd data={ld} />
       <Hero
-        slides={dests.map((d) => ({ slug: d.slug, name: tr(d.name, lang), country: countryLabel(d.country_code, lang), img: destImgUrl(d) }))}
+        slides={dests.map((d) => ({ slug: d.slug, name: tr(d.name, lang), country: countryLabel(d.country_code, lang), img: destImgUrl(d), video: heroVideo(d.slug) }))}
         action={`${p}/explorer`}
         instagramUrl={INSTAGRAM_URL}
         defaults={{ in: addDays(30), out: addDays(37) }}

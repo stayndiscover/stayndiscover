@@ -1,0 +1,3 @@
+Vidéos de la bannière d'accueil (facultatives)
+- martinique.mp4, belize.mp4, maroc.mp4 : boucle de 5 à 10 s, 16:9, sans son, moins de 4 Mo.
+- Si un fichier est présent, il remplace la photo animée de cette destination.

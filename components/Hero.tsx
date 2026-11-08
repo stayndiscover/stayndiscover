@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { InstagramIcon } from './Icons';
 
-type Slide = { slug: string; name: string; country: string; img: string | null };
+type Slide = { slug: string; name: string; country: string; img: string | null; video?: string | null };
 type Labels = { eyebrowAll: string; destination: string; allDest: string; arrival: string; departure: string; travelers: string;
   searchType: string; typeH: string; typeE: string; exploreBtn: string; title: string; sub: string; group: string; instagram: string };
 
@@ -14,6 +14,22 @@ export function Hero({ slides, labels, action, defaults, instagramUrl }: { slide
   const [fixed, setFixed] = useState<string | null>(null);
   const [dest, setDest] = useState('');
   const idxRef = useRef(0);
+  const videos = useRef<(HTMLVideoElement | null)[]>([]);
+  const [motionOk, setMotionOk] = useState(false);
+
+  // Les vidéos ne se lancent que si le visiteur n'a pas demandé moins d'animations ni l'économiseur de données
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+    setMotionOk(!reduce && !saveData);
+  }, []);
+  // Seule la vidéo de la diapositive affichée joue ; les autres sont en pause (économie de batterie et de données)
+  useEffect(() => {
+    videos.current.forEach((v, k) => {
+      if (!v) return;
+      if (k === idx && motionOk) { v.play().catch(() => {}); } else if (k !== prev) { v.pause(); }
+    });
+  }, [idx, prev, motionOk]);
 
   const show = (i: number) => {
     const n = (i + slides.length) % slides.length;
@@ -39,8 +55,12 @@ export function Hero({ slides, labels, action, defaults, instagramUrl }: { slide
     <section className="hero">
       <div className="slides" aria-hidden="true">
         {slides.map((s, k) => (
-          <div key={s.slug} className={`slide fx-${s.slug} ${k === idx ? 'on' : k === prev ? 'out' : ''} ${prev === null ? 'noanim' : ''}`}>
+          <div key={s.slug} className={`slide fx-${s.slug} ${s.video && motionOk ? 'has-video' : ''} ${k === idx ? 'on' : k === prev ? 'out' : ''} ${prev === null ? 'noanim' : ''}`}>
             {s.img && <Image src={s.img} alt="" fill sizes="100vw" priority={k === 0} quality={70} />}
+            {s.video && motionOk && (
+              <video ref={(el) => { videos.current[k] = el; }} className="slide-video" src={s.video} muted loop playsInline
+                preload={k === idx ? 'auto' : 'metadata'} aria-hidden="true" />
+            )}
             {/* effets d'ambiance propres à chaque destination (reflets, sable…) */}
             <span className="fx fx-a" /><span className="fx fx-b" />
           </div>
