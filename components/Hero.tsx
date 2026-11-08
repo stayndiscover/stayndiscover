@@ -27,7 +27,7 @@ export function Hero({ slides, labels, action, defaults, instagramUrl }: { slide
   useEffect(() => {
     videos.current.forEach((v, k) => {
       if (!v) return;
-      if (k === idx && motionOk) { v.play().catch(() => {}); } else if (k !== prev) { v.pause(); }
+      if (k === idx && motionOk) { v.currentTime = 0; v.play().catch(() => {}); } else if (k !== prev) { v.pause(); }
     });
   }, [idx, prev, motionOk]);
 
