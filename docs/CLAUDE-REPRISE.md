@@ -88,6 +88,22 @@ Fonctions SQL déjà prêtes pour les fonctions serveur de la phase 2 :
 - **Stripe :** depuis une plateforme française, les reversements automatiques ne vont que vers les États-Unis, le Royaume-Uni, l'EEE, le Canada et la Suisse. La Martinique est couverte : Stripe l'accepte comme la France. **Maroc et Belize : virement manuel**, enregistré dans l'administration (`payout_method = manual_transfer`).
 - **Juridique, à faire valider par un avocat :** vendre ensemble un hébergement et des excursions peut constituer un forfait touristique, avec immatriculation Atout France et garantie financière à la clé. Autres points : TVA, déclaration DAC7, CGV et RGPD.
 
+## Mise en ligne (8 novembre 2026)
+
+- **Comptes créés :**
+  - GitHub `stayndiscover/stayndiscover`, en privé ; Claude peut y envoyer les modifications ;
+  - Supabase : projet `exhscxazatsiragpzbzr`, Europe, avec les 6 migrations installées et vérifiées (31 tables, toutes protégées par RLS) ;
+  - Vercel : https://stayndiscover.vercel.app, avec les 4 variables d'environnement.
+- **Compte de Marion :** stayndiscover@gmail.com, passé en admin ; les données de démonstration sont installées.
+- **Chaque `git push` sur `main` redéploie le site automatiquement.**
+- **Accueil :**
+  - le menu est réduit à Destinations, Explorer et Préparer mon séjour ;
+  - le diaporama est animé ;
+  - une vidéo par destination est possible dans `public/videos/<destination>.mp4`. `maroc.mp4` est en place, avec le filigrane KlingAI de la version gratuite, que Marion accepte pour l'instant. **À remplacer par une version sans filigrane avant l'ouverture au public.** Les vidéos de la Martinique (vagues) et du Belize ne sont pas encore faites.
+- **À faire avant l'ouverture au public :**
+  - retirer les données de démonstration (`supabase/demo/supprimer-demo.sql`) ;
+  - brancher le nom de domaine, puis mettre à jour `NEXT_PUBLIC_SITE_URL` et les URL d'Auth dans Supabase.
+
 ## Prochaine étape
 
 1. **Mise en ligne par Marion**, en suivant `docs/GUIDE-MISE-EN-LIGNE.md` (GitHub, Supabase, Vercel, compte admin). Si elle donne l'accès à son dépôt GitHub, Claude peut y envoyer le code.
