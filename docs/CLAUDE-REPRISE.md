@@ -54,6 +54,13 @@ StayNdiscover (le logo écrit « StayNdiscover ») est une plateforme touristiqu
    - les fiches sans photo affichent les illustrations générées de la maquette ;
    - les données de démonstration sont dans `supabase/demo/` ;
    - une migration 5 ajoute la table `newsletter_subscribers`.
+   - **Référencement** (fait le 8 novembre 2026) :
+     - `lib/seo.ts` (`pageMeta`, `privateMeta`), `app/sitemap.ts`, `app/robots.ts`, `app/manifest.ts` ;
+     - données schema.org sur chaque page publique ; la note n'est publiée que s'il y a de vrais avis ;
+     - les recherches filtrées (texte, prix, dates) sont en noindex ;
+     - `next/image` en AVIF/WebP ;
+     - variable facultative `GOOGLE_SITE_VERIFICATION` ;
+     - contrôle : `tests/seo.mjs` (avec l'agent Googlebot, car Next 16 envoie les métadonnées en différé aux navigateurs normaux).
 
 Fonctions SQL déjà prêtes pour les fonctions serveur de la phase 2 :
 

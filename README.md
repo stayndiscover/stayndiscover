@@ -15,6 +15,7 @@ Next.js 16 (App Router) hébergé sur Vercel, Supabase (base PostgreSQL, comptes
 | Comptes | Inscription voyageur ou prestataire, connexion, mot de passe oublié, confirmation par e-mail, déconnexion (Supabase Auth) |
 | Espace client | Profil, favoris synchronisés sur tous les appareils, plusieurs séjours, création d'un séjour qui enregistre et redirige vers les favoris, ajout et retrait d'activités, panier multi-prestataires revérifié en direct, réservations et paiements |
 | Langues | FR / EN / ES dans l'adresse (`/fr`, `/en`, `/es`), choix mémorisé |
+| Référencement | Titres et descriptions traduits par page, hreflang et canonical, `sitemap.xml` dynamique (3 langues, images), `robots.txt`, données structurées schema.org (Organization, WebSite + recherche, TouristDestination, LodgingBusiness, TouristTrip, TouristAttraction/Restaurant/Beach, BreadcrumbList, ItemList), Open Graph et cartes X, pages privées en noindex, images AVIF/WebP à la bonne taille, favicon et manifeste. Contrôle : `node tests/seo.mjs` |
 
 **Pas encore fait (étapes suivantes) :** paiement Stripe (le bouton « Payer » est désactivé avec un message), espace prestataire et administration, planificateur automatique avec trajets Google Routes, PDF, e-mails, synchronisation iCal planifiée.
 

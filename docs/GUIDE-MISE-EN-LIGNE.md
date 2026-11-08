@@ -85,6 +85,28 @@ Sur ton téléphone, ouvre le site et vérifie :
 - [ ] **Préparer mon séjour** → tu crées un séjour → tu arrives sur tes favoris avec le message « Séjour enregistré » ;
 - [ ] tu ajoutes une villa et une excursion au panier.
 
+## 8. Être trouvée sur Google (15 min, une fois le nom de domaine en place)
+
+Le site est déjà préparé pour Google :
+- chaque page a son titre et sa description en FR, EN et ES ;
+- un plan du site se met à jour tout seul ;
+- les fiches portent des données que Google sait lire (prix, horaires, position GPS).
+
+Il reste à le déclarer :
+
+1. Va sur **search.google.com/search-console** et connecte-toi avec ton compte Google.
+2. Clique sur **Ajouter une propriété**, choisis **Préfixe de l'URL** et saisis l'adresse de ton site (par exemple `https://www.stayndiscover.com`).
+3. Choisis la méthode **Balise HTML**. Google affiche une ligne qui contient `content="XXXXXXXX"` : copie uniquement le code `XXXXXXXX`.
+4. **Vercel** → **Settings** → **Environment Variables** : ajoute `GOOGLE_SITE_VERIFICATION` avec ce code comme valeur, puis fais **Redeploy** (comme à l'étape 4).
+5. Retourne dans Search Console et clique sur **Valider**.
+6. Menu de gauche **Sitemaps** : saisis `sitemap.xml`, puis clique sur **Envoyer**.
+
+Google mettra quelques jours à quelques semaines à afficher tes pages. Ce qui fera vraiment monter le site ensuite :
+- des **vraies photos** sur chaque fiche ;
+- des **descriptions écrites à la main** dans les 3 langues ;
+- les **avis clients** (les étoiles n'apparaîtront dans Google qu'à partir de vrais avis) ;
+- des **liens** depuis tes réseaux sociaux et les sites de tes partenaires.
+
 ---
 
 **À faire ensuite, avec Claude :** Stripe (paiement), Google Maps (carte et trajets), Resend (e-mails), le nom de domaine, puis l'espace prestataire et l'administration.
