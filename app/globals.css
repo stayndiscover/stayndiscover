@@ -391,3 +391,4 @@ label.chip:focus-within{outline:3px solid var(--sun);outline-offset:2px}
 .tabs3 a.on .n{background:var(--accent);color:#fff}
 @media (max-width:760px){.tabs3{grid-template-columns:1fr}}
 .card .tagtop{max-width:calc(100% - 66px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.paywall-how{background:var(--bg);border-left:3px solid var(--sun);border-radius:8px;padding:10px 12px;font-size:.92rem;margin:0}

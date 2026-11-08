@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { unlockPlanner } from '@/app/actions';
 
-type L = { title: string; text: string; b1: string; b2: string; b3: string; keep: string; once: string; btn: string; later: string;
+type L = { title: string; text: string; how: string; b1: string; b2: string; b3: string; keep: string; once: string; btn: string; later: string;
   pending: string; close: string; price: string };
 
 /** Fenêtre de déblocage du planificateur (19,99 € par séjour). La sélection du voyageur n'est jamais touchée. */
@@ -25,6 +25,7 @@ export function PlannerPaywall({ lang, trip, path, closeHref, pending, l }: {
         <span className="eyebrow">StayNdiscover</span>
         <h2 id="pw-title">{l.title}</h2>
         <p className="muted">{l.text}</p>
+        <p className="paywall-how">🗺️ {l.how}</p>
         <ul className="paywall-list">
           <li>{l.b1}</li><li>{l.b2}</li><li>{l.b3}</li>
         </ul>

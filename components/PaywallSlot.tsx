@@ -22,7 +22,7 @@ export async function PaywallSlot({ lang, basePath, sp }: { lang: Lang; basePath
   const price = money(st.price, lang, st.currency);
   return (
     <PlannerPaywall lang={lang} trip={sp.sejour} path={closeHref} closeHref={closeHref} pending={sp.attente === '1'}
-      l={{ title: t('pwTitle'), text: t('pwText', st.free_items), b1: t('pwB1'), b2: t('pwB2'), b3: t('pwB3'), keep: t('pwKeep'),
+      l={{ title: t('pwTitle'), text: t('pwText', st.free_items), how: t('pwHow'), b1: t('pwB1'), b2: t('pwB2'), b3: t('pwB3'), keep: t('pwKeep'),
         once: t('pwOnce'), btn: t('pwBtn', price), later: t('pwLater'), pending: t('pwPending'), close: t('close'), price }} />
   );
 }

@@ -2,6 +2,10 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-08 — Fenêtre de paiement : explication de l’itinéraire
+- Au 6ᵉ cœur (activité, excursion ou lieu), la fenêtre de paiement explique maintenant que l’itinéraire Google Maps est créé jour par jour à partir des favoris (FR/EN/ES).
+- Testé : 5 cœurs ajoutés sans paiement, le 6ᵉ ouvre la fenêtre.
+
 ## 8 novembre 2026 : catalogue de « Mon séjour » en 3 onglets (demande de Marion)
 
 Les 3 onglets, dans l'ordre :
