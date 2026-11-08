@@ -26,7 +26,7 @@ const EXTRA: Record<string, [string, string, string]> = {
   favForTrip: ['Vos favoris pour ce séjour', 'Your favourites for this trip', 'Tus favoritos para este viaje'],
   otherFavs: ['Autres destinations', 'Other destinations', 'Otros destinos'],
   plannerSoon: ['Le planificateur automatique (calendrier, trajets, PDF) arrive à l\'étape suivante.', 'The automatic planner (calendar, travel times, PDF) comes in the next step.', 'El planificador automático (calendario, trayectos, PDF) llega en la siguiente etapa.'],
-  payNotYet: ['Le paiement par carte sera activé dès que le compte Stripe de StaynDiscover sera relié.', 'Card payment will be enabled as soon as StaynDiscover\'s Stripe account is connected.', 'El pago con tarjeta se activará en cuanto se conecte la cuenta Stripe de StaynDiscover.'],
+  payNotYet: ['Le paiement par carte sera activé dès que le compte Stripe de StayNdiscover sera relié.', 'Card payment will be enabled as soon as StayNdiscover\'s Stripe account is connected.', 'El pago con tarjeta se activará en cuanto se conecte la cuenta Stripe de StayNdiscover.'],
   recheck: ['Les disponibilités sont vérifiées à nouveau au moment du paiement.', 'Availability is checked again at payment time.', 'La disponibilidad se vuelve a comprobar al pagar.'],
   subtotal: ['Sous-total', 'Subtotal', 'Subtotal'],
   cleaning: ['Ménage', 'Cleaning', 'Limpieza'],

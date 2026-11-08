@@ -1,4 +1,4 @@
-# StaynDiscover : l'application
+# StayNdiscover : l'application
 
 Plateforme touristique (Martinique, Belize, Maroc) : découvrir → enregistrer → planifier → réserver → payer → voyager.
 Next.js 16 (App Router) hébergé sur Vercel, Supabase (base PostgreSQL, comptes, stockage), en français, anglais et espagnol.

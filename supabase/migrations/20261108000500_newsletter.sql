@@ -1,5 +1,5 @@
 -- =====================================================================
--- StaynDiscover — Migration 5 : inscriptions à la newsletter (page d'accueil)
+-- StayNdiscover — Migration 5 : inscriptions à la newsletter (page d'accueil)
 -- Un visiteur peut s'inscrire sans compte ; seul l'admin lit la liste.
 -- =====================================================================
 create table public.newsletter_subscribers (

@@ -1,5 +1,5 @@
 -- =====================================================================
--- StaynDiscover : DONNÉES DE DÉMONSTRATION (fictives, reprises de la maquette)
+-- StayNdiscover : DONNÉES DE DÉMONSTRATION (fictives, reprises de la maquette)
 -- Sert à voir le site rempli et à le tester. À NE PAS garder au lancement réel :
 -- supprime-les avec supprimer-demo.sql avant d'ouvrir le site au public.
 -- Prérequis : avoir créé ton compte sur le site et l'avoir passé en admin.

@@ -1,5 +1,5 @@
 -- =====================================================================
--- StaynDiscover — Migration 4/4 : données de départ et tâches planifiées
+-- StayNdiscover — Migration 4/4 : données de départ et tâches planifiées
 -- =====================================================================
 
 -- ---------- Destinations initiales ----------

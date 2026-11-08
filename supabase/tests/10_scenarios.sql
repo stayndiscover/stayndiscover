@@ -1,5 +1,5 @@
 -- =====================================================================
--- Scénarios de test StaynDiscover (à lancer après 00_supabase_stub.sql + migrations)
+-- Scénarios de test StayNdiscover (à lancer après 00_supabase_stub.sql + migrations)
 -- Chaque assertion échoue bruyamment ; « OK » = comportement attendu.
 -- =====================================================================
 \set ON_ERROR_STOP 1
@@ -161,14 +161,14 @@ set role service_role;
 select pg_temp.ok((select count(*) from public.connections_due()) = 1, 'connexion à synchroniser détectée');
 select pg_temp.ok((public.apply_ical_sync((select id from calendar_connections),
   '[{"uid":"air-1","start":"2027-03-01","end":"2027-03-05"},{"uid":"air-2","start":"2027-02-16","end":"2027-02-18"}]')->'conflicts'->0->>'external') is not null,
-  'iCal : conflit détecté (Airbnb a vendu des nuits déjà réservées sur StaynDiscover)');
+  'iCal : conflit détecté (Airbnb a vendu des nuits déjà réservées sur StayNdiscover)');
 select pg_temp.ok((select count(*) from notifications where kind = 'calendar_conflict') = 2, 'alerte conflit : prestataire + admin');
 select pg_temp.ok((public.apply_ical_sync((select id from calendar_connections), '[{"uid":"air-1","start":"2027-03-01","end":"2027-03-05"}]')->>'removed')::int = 1,
   'iCal : une annulation Airbnb libère les dates au passage suivant');
 select public.record_sync_error((select id from calendar_connections), 'HTTP 503'), public.record_sync_error((select id from calendar_connections), 'HTTP 503'),
        public.record_sync_error((select id from calendar_connections), 'HTTP 503');
 select pg_temp.ok((select count(*) from notifications where kind = 'sync_error') = 2, 'alerte après 3 échecs de synchro d''affilée');
-select pg_temp.ok(position('DTSTART;VALUE=DATE:20270210' in public.ical_feed((select ical_export_token from accommodation_units))) > 0, 'export iCal : la réservation StaynDiscover apparaît');
+select pg_temp.ok(position('DTSTART;VALUE=DATE:20270210' in public.ical_feed((select ical_export_token from accommodation_units))) > 0, 'export iCal : la réservation StayNdiscover apparaît');
 select pg_temp.ok(position('20270301' in public.ical_feed((select ical_export_token from accommodation_units))) = 0, 'export iCal : les blocages Airbnb ne sont pas renvoyés (pas de boucle)');
 reset role;
 

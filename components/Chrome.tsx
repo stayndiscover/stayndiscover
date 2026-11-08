@@ -21,11 +21,11 @@ export function Header({ lang, me, favCount, cartCount }: { lang: Lang; me: Me |
   return (
     <header className="top">
       <div className="wrap">
-        <Link className="logo" href={p} aria-label="StaynDiscover">
+        <Link className="logo" href={p} aria-label="StayNdiscover">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="logo-sym" src="/images/logo-symbole.png" alt="" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="logo-word" src="/images/logo-nom.png" alt="StaynDiscover" />
+          <img className="logo-word" src="/images/logo-nom.png" alt="StayNdiscover" />
         </Link>
         <MainNav items={nav} menuLabel={t('menu')} />
         <div className="hdr-tools">
@@ -62,7 +62,7 @@ export function Footer({ lang, dests }: { lang: Lang; dests: Destination[] }) {
       <div className="wrap">
         <div className="stack">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <span className="logo-tile"><img src="/images/logo.png" alt="StaynDiscover" /></span>
+          <span className="logo-tile"><img src="/images/logo.png" alt="StayNdiscover" /></span>
           <p className="small">{t('footAbout')}</p>
           <p className="small"><a href="mailto:contact@stayndiscover.com" style={{ display: 'inline' }}>contact@stayndiscover.com</a></p>
         </div>
@@ -80,7 +80,7 @@ export function Footer({ lang, dests }: { lang: Lang; dests: Destination[] }) {
           <span className="small">Instagram · Facebook · TikTok</span>
         </div>
       </div>
-      <div className="wrap small" style={{ paddingBottom: 24, opacity: 0.7 }}>© {new Date().getFullYear()} StaynDiscover</div>
+      <div className="wrap small" style={{ paddingBottom: 24, opacity: 0.7 }}>© {new Date().getFullYear()} StayNdiscover</div>
     </footer>
   );
 }

@@ -1,5 +1,5 @@
 -- =====================================================================
--- StaynDiscover — schéma principal (Supabase / PostgreSQL 15+)
+-- StayNdiscover — schéma principal (Supabase / PostgreSQL 15+)
 -- Migration 1/4 : extensions, types, tables, index, contraintes
 -- =====================================================================
 -- Conventions

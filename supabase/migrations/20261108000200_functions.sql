@@ -1,5 +1,5 @@
 -- =====================================================================
--- StaynDiscover — Migration 2/4 : logique métier en base
+-- StayNdiscover — Migration 2/4 : logique métier en base
 --   * rôles et inscription
 --   * disponibilités, devis, commissions
 --   * paiement en deux temps : tenue des dates/places -> autorisation -> capture
@@ -93,7 +93,7 @@ begin
        or new.stripe_charges_enabled is distinct from old.stripe_charges_enabled
        or new.stripe_payouts_enabled is distinct from old.stripe_payouts_enabled
        or new.payout_method is distinct from old.payout_method then
-      raise exception 'FORBIDDEN: statut et paiements gérés par StaynDiscover';
+      raise exception 'FORBIDDEN: statut et paiements gérés par StayNdiscover';
     end if;
   end if;
   return new;
@@ -455,7 +455,7 @@ end $$;
 -- SYNCHRONISATION iCal — import (service, appelée par l'Edge Function « sync-calendars »)
 -- p_events = [{"uid":"...","start":"2027-02-03","end":"2027-02-06"}, ...]
 -- Remplace les blocages de cette connexion par l'état actuel du calendrier externe,
--- et signale tout conflit avec une réservation StaynDiscover.
+-- et signale tout conflit avec une réservation StayNdiscover.
 -- ---------------------------------------------------------------------
 create or replace function public.apply_ical_sync(p_connection uuid, p_events jsonb) returns jsonb
 language plpgsql security definer set search_path = public as $$
@@ -487,7 +487,7 @@ begin
   )
   select count(*) into v_added from ins;
 
-  -- conflit = un blocage externe chevauche une réservation StaynDiscover active
+  -- conflit = un blocage externe chevauche une réservation StayNdiscover active
   select coalesce(jsonb_agg(jsonb_build_object('booking', k.id, 'stay', k.stay::text, 'external', b.period::text)), '[]')
     into v_conflicts
     from public.unit_blocks b join public.bookings k on k.unit_id = b.unit_id and k.stay && b.period
@@ -534,8 +534,8 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- ---------------------------------------------------------------------
--- EXPORT iCal : flux StaynDiscover à coller dans Airbnb / Booking / Amenitiz
--- Contient les réservations StaynDiscover et les fermetures manuelles.
+-- EXPORT iCal : flux StayNdiscover à coller dans Airbnb / Booking / Amenitiz
+-- Contient les réservations StayNdiscover et les fermetures manuelles.
 -- (Les blocages importés ne sont pas réexportés, pour éviter les boucles.)
 -- ---------------------------------------------------------------------
 create or replace function public.ical_feed(p_token text) returns text
@@ -545,9 +545,9 @@ begin
   select * into u from public.accommodation_units where ical_export_token = p_token and is_active;
   if not found then return null; end if;
   v := 'BEGIN:VCALENDAR' || chr(13) || chr(10) || 'VERSION:2.0' || chr(13) || chr(10) ||
-       'PRODID:-//StaynDiscover//Calendar//FR' || chr(13) || chr(10) || 'CALSCALE:GREGORIAN' || chr(13) || chr(10);
+       'PRODID:-//StayNdiscover//Calendar//FR' || chr(13) || chr(10) || 'CALSCALE:GREGORIAN' || chr(13) || chr(10);
   for r in
-    select 'sd-booking-' || id uid, lower(stay) s, upper(stay) e, 'StaynDiscover' summary from public.bookings
+    select 'sd-booking-' || id uid, lower(stay) s, upper(stay) e, 'StayNdiscover' summary from public.bookings
      where unit_id = u.id and status in ('confirmed','hold') and upper(stay) >= current_date
     union all
     select 'sd-block-' || id, lower(period), upper(period), 'Indisponible' from public.unit_blocks

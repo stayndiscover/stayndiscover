@@ -1,4 +1,4 @@
-# Mettre StaynDiscover en ligne : le guide pas à pas
+# Mettre StayNdiscover en ligne : le guide pas à pas
 
 Compte environ 1 heure. Fais les étapes **dans l'ordre**. Les écrans des sites changent parfois de libellé : si tu ne trouves pas un bouton, fais une capture d'écran et envoie-la à Claude.
 

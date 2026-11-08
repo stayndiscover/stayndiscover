@@ -1,10 +1,10 @@
-# StaynDiscover : note de reprise pour Claude
+# StayNdiscover : note de reprise pour Claude
 
 Ce fichier résume tout le travail déjà fait et les décisions prises, pour reprendre le projet dans une nouvelle conversation sans rien redemander. Lis-le en entier avant de répondre.
 
 ## Le projet
 
-StaynDiscover (le logo écrit « StayNdiscover ») est une plateforme touristique internationale créée par Marion, community manager et directrice artistique freelance basée en Martinique. Elle n'est pas développeuse.
+StayNdiscover (le logo écrit « StayNdiscover ») est une plateforme touristique internationale créée par Marion, community manager et directrice artistique freelance basée en Martinique. Elle n'est pas développeuse.
 
 - **Destinations de départ :** Martinique, Belize, Maroc. D'autres doivent pouvoir s'ajouter sans toucher au code.
 - **Parcours visé :** découvrir → enregistrer → planifier → réserver → payer → voyager.
@@ -36,7 +36,7 @@ StaynDiscover (le logo écrit « StayNdiscover ») est une plateforme touristiqu
    - l'espace prestataire et l'administration.
 
    Elle sert de **référence visuelle et fonctionnelle** pour le vrai site. Pour l'ouvrir, il suffit de lancer `index.html` dans un navigateur (le dossier `images/` doit rester à côté).
-2. **Phase 1 : conception**, dans `03-conception/StaynDiscover-conception-technique.pdf` : architecture, rôles et permissions, base de données, flux de paiement et de synchronisation, limites des API, plan en 7 étapes, points juridiques.
+2. **Phase 1 : conception**, dans `03-conception/StayNdiscover-conception-technique.pdf` : architecture, rôles et permissions, base de données, flux de paiement et de synchronisation, limites des API, plan en 7 étapes, points juridiques.
 3. **Base de données Supabase** dans `04-base-de-donnees/` :
    - 4 migrations SQL : 29 tables, sécurité par rôle (RLS), fonctions métier ;
    - testée sur PostgreSQL 16 : 56 vérifications réussies, plus un test de deux paiements simultanés ;
@@ -72,7 +72,7 @@ Fonctions SQL déjà prêtes pour les fonctions serveur de la phase 2 :
 ## Limites vérifiées (novembre 2026)
 
 - **Airbnb :** API réservée aux partenaires approuvés, plus de nouvelles demandes acceptées. **Booking.com :** API réservée aux partenaires de connectivité. Solution retenue : iCal dans les deux sens, et le temps réel via le channel manager de l'hébergeur s'il en a un.
-- **FareHarbor :** clés API seulement après un accord de partenariat. **Amenitiz :** aucune API publique trouvée. Solution retenue : saisie des créneaux dans StaynDiscover au lancement, et demandes d'accès à faire en parallèle.
+- **FareHarbor :** clés API seulement après un accord de partenariat. **Amenitiz :** aucune API publique trouvée. Solution retenue : saisie des créneaux dans StayNdiscover au lancement, et demandes d'accès à faire en parallèle.
 - **Stripe :** depuis une plateforme française, les reversements automatiques ne vont que vers les États-Unis, le Royaume-Uni, l'EEE, le Canada et la Suisse. La Martinique est couverte : Stripe l'accepte comme la France. **Maroc et Belize : virement manuel**, enregistré dans l'administration (`payout_method = manual_transfer`).
 - **Juridique, à faire valider par un avocat :** vendre ensemble un hébergement et des excursions peut constituer un forfait touristique, avec immatriculation Atout France et garantie financière à la clé. Autres points : TVA, déclaration DAC7, CGV et RGPD.
 
@@ -92,4 +92,4 @@ Fonctions SQL déjà prêtes pour les fonctions serveur de la phase 2 :
 - **Clés secrètes :** ne lui demande jamais de les coller dans la conversation. Elle les saisit elle-même dans les réglages de Supabase ou de Vercel.
 - **Tests :** teste chaque étape réellement avant de la déclarer terminée, comme l'exige la section 15 du cahier des charges.
 - **Code :** il doit vivre sur GitHub dès l'étape 1, pour pouvoir le reprendre d'une conversation à l'autre.
-- **Petite question en suspens :** quelle orthographe garder partout, « StaynDiscover » ou « StayNdiscover » (celle du logo) ?
+- **Orthographe :** décidée par Marion le 8 novembre 2026 : « StayNdiscover » partout (comme le logo). Les adresses et identifiants techniques restent en minuscules (`stayndiscover`).

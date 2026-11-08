@@ -231,9 +231,9 @@ export const BASE: Record<string, [string, string, string]> = {
   "Opiniones"
  ],
  "reviewsTitle": [
-  "Ils ont voyagé avec StaynDiscover",
-  "They travelled with StaynDiscover",
-  "Viajaron con StaynDiscover"
+  "Ils ont voyagé avec StayNdiscover",
+  "They travelled with StayNdiscover",
+  "Viajaron con StayNdiscover"
  ],
  "reviewsN": [
   "avis",
@@ -241,9 +241,9 @@ export const BASE: Record<string, [string, string, string]> = {
   "opiniones"
  ],
  "whyTitle": [
-  "Pourquoi choisir StaynDiscover ?",
-  "Why choose StaynDiscover?",
-  "¿Por qué elegir StaynDiscover?"
+  "Pourquoi choisir StayNdiscover ?",
+  "Why choose StayNdiscover?",
+  "¿Por qué elegir StayNdiscover?"
  ],
  "why1": [
   "Tout au même endroit",
@@ -1171,9 +1171,9 @@ export const BASE: Record<string, [string, string, string]> = {
   "Pagar ahora"
  ],
  "securePay": [
-  "Paiement sécurisé, données bancaires jamais stockées par StaynDiscover.",
-  "Secure payment, card data never stored by StaynDiscover.",
-  "Pago seguro, StaynDiscover nunca guarda datos bancarios."
+  "Paiement sécurisé, données bancaires jamais stockées par StayNdiscover.",
+  "Secure payment, card data never stored by StayNdiscover.",
+  "Pago seguro, StayNdiscover nunca guarda datos bancarios."
  ],
  "securePayT": [
   "Paiement sécurisé",
@@ -1471,9 +1471,9 @@ export const BASE: Record<string, [string, string, string]> = {
   "Enviar a validación"
  ],
  "valHint": [
-  "L'équipe StaynDiscover valide chaque annonce avant sa mise en ligne.",
-  "The StaynDiscover team reviews each listing before it goes live.",
-  "El equipo de StaynDiscover valida cada anuncio antes de publicarlo."
+  "L'équipe StayNdiscover valide chaque annonce avant sa mise en ligne.",
+  "The StayNdiscover team reviews each listing before it goes live.",
+  "El equipo de StayNdiscover valida cada anuncio antes de publicarlo."
  ],
  "submitted": [
   "Annonce envoyée pour validation",
@@ -1526,14 +1526,14 @@ export const BASE: Record<string, [string, string, string]> = {
   "Sincronización de calendarios"
  ],
  "syncText": [
-  "Évitez les doubles réservations : importez le calendrier iCal d'Airbnb, Booking.com ou Abritel et exportez celui de StaynDiscover vers ces plateformes.",
-  "Avoid double bookings: import the iCal calendar from Airbnb, Booking.com or Vrbo and export StaynDiscover's to them.",
-  "Evita reservas dobles: importa el iCal de Airbnb, Booking.com o Vrbo y exporta el de StaynDiscover."
+  "Évitez les doubles réservations : importez le calendrier iCal d'Airbnb, Booking.com ou Abritel et exportez celui de StayNdiscover vers ces plateformes.",
+  "Avoid double bookings: import the iCal calendar from Airbnb, Booking.com or Vrbo and export StayNdiscover's to them.",
+  "Evita reservas dobles: importa el iCal de Airbnb, Booking.com o Vrbo y exporta el de StayNdiscover."
  ],
  "icalExport": [
-  "Lien d'export StaynDiscover (à coller sur les autres plateformes)",
-  "StaynDiscover export link (paste on other platforms)",
-  "Enlace de exportación StaynDiscover"
+  "Lien d'export StayNdiscover (à coller sur les autres plateformes)",
+  "StayNdiscover export link (paste on other platforms)",
+  "Enlace de exportación StayNdiscover"
  ],
  "icalImport": [
   "Lien iCal à importer",
@@ -1581,9 +1581,9 @@ export const BASE: Record<string, [string, string, string]> = {
   "Importes cobrados"
  ],
  "commission": [
-  "Commission StaynDiscover",
-  "StaynDiscover commission",
-  "Comisión StaynDiscover"
+  "Commission StayNdiscover",
+  "StayNdiscover commission",
+  "Comisión StayNdiscover"
  ],
  "payoutHist": [
   "Historique des reversements",
@@ -2026,8 +2026,8 @@ export const BASE: Record<string, [string, string, string]> = {
   "Volver al inicio"
  ],
  "legalTxt": [
-  "Les conditions générales de vente, mentions légales et politique de confidentialité de StaynDiscover seront publiées ici et administrées depuis l'espace Contenus, dans les trois langues.",
-  "StaynDiscover's terms of sale, legal notice and privacy policy will be published here and managed from the Content area, in all three languages.",
+  "Les conditions générales de vente, mentions légales et politique de confidentialité de StayNdiscover seront publiées ici et administrées depuis l'espace Contenus, dans les trois langues.",
+  "StayNdiscover's terms of sale, legal notice and privacy policy will be published here and managed from the Content area, in all three languages.",
   "Las condiciones generales, el aviso legal y la política de privacidad se publicarán aquí y se gestionarán desde Contenidos, en los tres idiomas."
  ]
 };

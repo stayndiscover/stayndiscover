@@ -1,4 +1,4 @@
-# StaynDiscover : base de données Supabase (phase 1)
+# StayNdiscover : base de données Supabase (phase 1)
 
 Base de données complète de la plateforme : tables, sécurité par rôle (RLS), réservations sans doublon, places d'excursion, paiement en deux temps, commissions, reversements, synchronisation iCal.
 

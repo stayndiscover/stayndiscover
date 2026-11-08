@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const { lang } = await params;
   const l = isLang(lang) ? lang : 'fr';
   return {
-    title: { default: 'StaynDiscover', template: '%s · StaynDiscover' },
+    title: { default: 'StayNdiscover', template: '%s · StayNdiscover' },
     description: t(l, 'heroSub'),
     icons: { icon: '/images/logo-symbole.png' },
     alternates: { languages: { fr: '/fr', en: '/en', es: '/es' } },

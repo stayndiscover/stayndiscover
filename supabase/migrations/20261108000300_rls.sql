@@ -1,5 +1,5 @@
 -- =====================================================================
--- StaynDiscover — Migration 3/4 : sécurité par rôle (Row Level Security)
+-- StayNdiscover — Migration 3/4 : sécurité par rôle (Row Level Security)
 -- Règle générale : tout est fermé, puis on ouvre précisément.
 --   anon          = visiteur non connecté (lecture du catalogue publié)
 --   authenticated = client / prestataire / admin (selon profiles.role)
