@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { Card } from '@/components/Card';
+import { ExplorerShell } from '@/components/ExplorerFilters';
 import { getCategories, getDestinations, searchCards } from '@/lib/catalog';
 import { withDb, rows } from '@/lib/db';
 import { fDate, isLang, translator, tr, type Lang } from '@/lib/i18n';
@@ -47,7 +47,6 @@ export default async function Explorer({ params, searchParams }: { params: Promi
   const type = ['hebergement', 'excursion', 'lieu'].includes(sp.type ?? '') ? sp.type! : '';
   const f = { dest: sp.dest || '', type, sub: sp.sub || '', q: sp.q || '', max: sp.max || '' };
   const [dests, cats, list, { favs }] = await Promise.all([getDestinations(), getCategories(), searchCards(f), getUserState()]);
-  const subs = cats.filter((c) => !type || c.type === type);
 
   // Recherche avec dates : disponibilité réelle de chaque hébergement (calendrier + réservations + synchro iCal)
   const dated = isDate(sp.in) && isDate(sp.out) && sp.out! > sp.in!;
@@ -73,6 +72,7 @@ export default async function Explorer({ params, searchParams }: { params: Promi
       }
     });
   }
+  const isOn = (c: { id: string; type: string }) => c.type === 'hebergement' ? !!avail.get(c.id) : c.type === 'excursion' ? !!excAvail.get(c.id) : true;
   const qs = (patch: SP) => {
     const u = new URLSearchParams(Object.entries({ ...sp, ...patch }).filter(([, v]) => v) as [string, string][]);
     return `/${lang}/explorer${u.size ? '?' + u : ''}`;
@@ -89,32 +89,22 @@ export default async function Explorer({ params, searchParams }: { params: Promi
       ] }} />
       <div className="pagehead"><span className="eyebrow">{t('navExplore')}</span><h1>{title}</h1>
         {dated && <p className="muted">{t('availFor', fDate(sp.in!, lang), fDate(sp.out!, lang), travellers)}</p>}</div>
-      <form className="panel stack" style={{ marginBottom: 20 }} method="get" action={`/${lang}/explorer`}>
-        {dated && <><input type="hidden" name="in" value={sp.in} /><input type="hidden" name="out" value={sp.out} /><input type="hidden" name="tr" value={travellers} /></>}
-        <div className="form">
-          <label className="f">{t('search')}<input type="text" name="q" defaultValue={f.q} placeholder={t('searchPh')} /></label>
-          <label className="f">{t('destination')}<select name="dest" defaultValue={f.dest}><option value="">{t('allDest')}</option>
-            {dests.map((d) => <option key={d.slug} value={d.slug}>{tr(d.name, lang)}</option>)}</select></label>
-          <label className="f">{t('category')}<select name="type" defaultValue={type}><option value="">{t('all')}</option>
-            <option value="hebergement">{t('typeH')}</option><option value="excursion">{t('typeE')}</option><option value="lieu">{t('typeL')}</option></select></label>
-          <label className="f">{t('maxPrice')}<input type="number" name="max" min={0} defaultValue={f.max} /></label>
-          {f.sub && <input type="hidden" name="sub" value={f.sub} />}
-          <div className="f" style={{ justifyContent: 'flex-end' }}><button className="btn" type="submit">{t('search')}</button></div>
-        </div>
-        <div className="chips">
-          <Link className={`chip ${!f.sub ? 'on' : ''}`} href={qs({ sub: undefined })}>{t('all')}</Link>
-          {subs.map((c) => <Link key={c.slug} className={`chip ${f.sub === c.slug ? 'on' : ''}`} href={qs({ sub: c.slug, type: type || c.type })}>{tr(c.name, lang)}</Link>)}
-        </div>
-      </form>
-      <p className="small muted" style={{ marginBottom: 12 }}>{list.length} {t('results')}</p>
-      {list.length ? (
-        <div className="grid g4">{list.map((c) => {
-          let extra: React.ReactNode = null;
-          if (dated && c.type === 'hebergement') extra = <div><span className={`pill ${avail.get(c.id) ? 'ok' : 'bad'}`}>{avail.get(c.id) ? t('available') : t('unavailable')}</span></div>;
-          if (dated && c.type === 'excursion') extra = <div><span className={`pill ${excAvail.get(c.id) ? 'ok' : 'bad'}`}>{excAvail.get(c.id) ? t('available') : t('unavailable')}</span></div>;
-          return <Card key={c.id} c={c} lang={lang} fav={favs.has(c.id)} path={path} extra={extra} />;
-        })}</div>
-      ) : <p className="muted">{t('noResults')}</p>}
+      <ExplorerShell
+        initial={{ q: f.q, dest: f.dest, type, sub: f.sub, max: f.max, in: dated ? sp.in! : '', out: dated ? sp.out! : '', tr: String(dated ? travellers : Number(sp.tr) || 2) }}
+        dests={dests.map((d) => ({ value: d.slug, label: tr(d.name, lang) }))}
+        cats={cats.map((c) => ({ slug: c.slug, type: c.type, label: tr(c.name, lang) }))}
+        l={Object.fromEntries(['search', 'searchPh', 'destination', 'allDest', 'category', 'all', 'typeH', 'typeE', 'typeL', 'arrival', 'departure',
+          'travelers', 'maxPrice', 'reset'].map((k) => [k, t(k)]))}>
+        <p className="small muted" style={{ marginBottom: 12 }}>{list.length} {t('results')}</p>
+        {list.length ? (
+          <div className="grid g4">{(dated ? [...list].sort((x, y) => Number(isOn(y)) - Number(isOn(x))) : list).map((c) => {
+            let extra: React.ReactNode = null;
+            if (dated && c.type === 'hebergement') extra = <div><span className={`pill ${avail.get(c.id) ? 'ok' : 'bad'}`}>{avail.get(c.id) ? t('available') : t('unavailable')}</span></div>;
+            if (dated && c.type === 'excursion') extra = <div><span className={`pill ${excAvail.get(c.id) ? 'ok' : 'bad'}`}>{excAvail.get(c.id) ? t('available') : t('unavailable')}</span></div>;
+            return <Card key={c.id} c={c} lang={lang} fav={favs.has(c.id)} path={path} extra={extra} />;
+          })}</div>
+        ) : <p className="muted">{t('noResults')}</p>}
+      </ExplorerShell>
     </div>
   );
 }

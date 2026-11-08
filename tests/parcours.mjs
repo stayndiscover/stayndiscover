@@ -183,6 +183,24 @@ ok(await p.locator('.card', { hasText: 'Villa Bois-Lézard' }).locator('.pill.ok
 await go('/fr/explorer?q=plong');
 ok(await p.locator('.card').count() >= 2, 'recherche texte « plong »');
 
+// 11. Explorer : la liste se met à jour toute seule, sans bouton « Rechercher »
+await go('/fr/explorer');
+const total = await p.locator('.card').count();
+await p.locator('form[role=search] select').first().selectOption('maroc');
+await p.waitForURL('**/explorer?dest=maroc');
+await p.waitForFunction(() => document.querySelector('.explorer-results')?.getAttribute('aria-busy') === 'false');
+const dests = await p.locator('.card .body .row span:first-child').allInnerTexts();
+ok(dests.length > 0 && dests.length < total && dests.every((d) => d === 'Maroc'), `Explorer : choisir « Maroc » n'affiche que le Maroc (${dests.length}/${total}), sans clic`);
+await p.locator('form[role=search] input[type=search]').fill('riad');
+await p.waitForURL('**q=riad**');
+await p.waitForFunction(() => document.querySelector('.explorer-results')?.getAttribute('aria-busy') === 'false');
+await p.waitForTimeout(800);
+const nRiad = await p.locator('.card').count();
+ok(nRiad >= 1 && nRiad < dests.length && await p.locator('.card', { hasText: 'Riad Dar Yasmine' }).count() === 1, `Explorer : la recherche texte se lance pendant la frappe (${nRiad} résultats)`);
+await p.getByRole('button', { name: 'Effacer les filtres' }).click();
+await p.waitForURL((u) => u.pathname === '/fr/explorer' && !u.search.includes('dest'));
+ok(true, 'Explorer : « Effacer les filtres » revient à tout le catalogue');
+
 ok(errors.length === 0, 'aucune erreur JavaScript dans le navigateur' + (errors.length ? ' : ' + errors.join(' | ') : ''));
 console.log(`\n${n - fail}/${n} vérifications réussies`);
 await b.close();

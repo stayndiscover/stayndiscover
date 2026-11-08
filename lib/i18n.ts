@@ -89,6 +89,7 @@ const EXTRA: Record<string, [string, string, string]> = {
   planDays: ['Organiser mes journées automatiquement', 'Organise my days automatically', 'Organizar mis días automáticamente'],
   unlockCta: ['Débloquer le planificateur · {0}', 'Unlock the planner · {0}', 'Desbloquear el planificador · {0}'],
   close: ['Fermer', 'Close', 'Cerrar'],
+  reset: ['Effacer les filtres', 'Clear filters', 'Borrar filtros'],
   skip: ['Aller au contenu', 'Skip to content', 'Ir al contenido'],
   loginToSave: ['Connectez-vous pour enregistrer vos favoris.', 'Sign in to save favourites.', 'Inicia sesión para guardar favoritos.'],
   adultsShort: ['adulte(s)', 'adult(s)', 'adulto(s)'],
