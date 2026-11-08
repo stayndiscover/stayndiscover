@@ -154,7 +154,8 @@ await p.waitForSelector('.notice.ok');
 ok(true, 'profil enregistré');
 
 // 9. Déconnexion / reconnexion : les favoris sont conservés sur le compte
-await p.locator('header button', { hasText: 'Déconnexion' }).click();
+await go('/fr/compte');
+await p.getByRole('button', { name: 'Déconnexion' }).click();
 await p.waitForURL(/\/fr$/);
 ok(await p.locator('header .badge').count() === 0, 'déconnectée : plus de favoris affichés');
 const p2 = await (await b.newContext({ viewport: { width: 390, height: 844 }, locale: 'fr-FR' })).newPage(); // « autre appareil » (mobile)

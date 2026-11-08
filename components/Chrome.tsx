@@ -5,19 +5,16 @@ import type { Destination } from '@/lib/catalog';
 import { CartIcon, HeartIcon, InstagramIcon, UserIcon } from './Icons';
 import { INSTAGRAM_URL } from '@/lib/social';
 import { LangSelect, MainNav } from './HeaderClient';
-import { signOut } from '@/app/actions';
 
 export function Header({ lang, me, favCount, cartCount }: { lang: Lang; me: Me | null; favCount: number; cartCount: number }) {
   const t = translator(lang);
   const p = `/${lang}`;
+  // Barre volontairement légère : hébergements et excursions restent accessibles depuis « Explorer » et l'accueil,
+  // l'espace client depuis l'icône de compte
   const nav = [
-    { href: `${p}/explorer`, label: t('navExplore') },
     { href: `${p}/destinations`, label: t('navDest') },
-    { href: `${p}/explorer?type=hebergement`, label: t('navStay') },
-    { href: `${p}/explorer?type=excursion`, label: t('navExc') },
+    { href: `${p}/explorer`, label: t('navExplore') },
     { href: `${p}/sejour`, label: t('navPlan') },
-    me?.role === 'provider' ? { href: `${p}/compte`, label: t('navPro') }
-      : me?.role === 'admin' ? { href: `${p}/compte`, label: t('navAdmin') } : { href: `${p}/compte`, label: t('navClient') },
   ];
   return (
     <header className="top">
@@ -38,12 +35,9 @@ export function Header({ lang, me, favCount, cartCount }: { lang: Lang; me: Me |
             <CartIcon />{cartCount > 0 && <span className="badge">{cartCount}</span>}
           </Link>
           {me ? (
-            <form action={signOut}>
-              <input type="hidden" name="lang" value={lang} />
-              <button className="btn sm acct ghost" aria-label={t('logout')}>
-                <span className="acct-t">{(me.full_name || me.email).split(' ')[0]} · {t('logout')}</span><UserIcon />
-              </button>
-            </form>
+            <Link className="btn sm acct ghost" href={`${p}/compte`} aria-label={t('account')} title={t('account')}>
+              <span className="acct-t">{(me.full_name || me.email).split(' ')[0]}</span><UserIcon />
+            </Link>
           ) : (
             <Link className="btn sm acct" href={`${p}/connexion`} aria-label={t('login')}>
               <span className="acct-t">{t('login')}</span><UserIcon />
