@@ -39,8 +39,10 @@ export function Hero({ slides, labels, action, defaults, instagramUrl }: { slide
     <section className="hero">
       <div className="slides" aria-hidden="true">
         {slides.map((s, k) => (
-          <div key={s.slug} className={`slide ${k === idx ? 'on' : k === prev ? 'out' : ''} ${prev === null ? 'noanim' : ''}`}>
+          <div key={s.slug} className={`slide fx-${s.slug} ${k === idx ? 'on' : k === prev ? 'out' : ''} ${prev === null ? 'noanim' : ''}`}>
             {s.img && <Image src={s.img} alt="" fill sizes="100vw" priority={k === 0} quality={70} />}
+            {/* effets d'ambiance propres à chaque destination (reflets, sable…) */}
+            <span className="fx fx-a" /><span className="fx fx-b" />
           </div>
         ))}
       </div>

@@ -282,3 +282,51 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
 .paywall-list li::before{content:"✓";position:absolute;left:0;top:0;width:18px;height:18px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:.75rem;font-weight:800;display:grid;place-items:center}
 .paywall-price{display:flex;align-items:baseline;gap:10px;padding:12px 14px;border-radius:14px;background:var(--accent-soft)}
 .paywall-price b{font-size:1.7rem;color:var(--accent)}
+
+/* =====================================================================
+   Diaporama vivant : mouvement de caméra lent + effets d'ambiance
+   (désactivés si le visiteur a demandé à réduire les animations)
+   ===================================================================== */
+.hero .slide img{will-change:transform;transform-origin:50% 50%}
+.hero .slide.on img,.hero .slide.out img{animation:kb-default 22s ease-in-out infinite alternate}
+.hero .fx{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s}
+.hero .slide.on .fx,.hero .slide.out .fx{opacity:1}
+@keyframes kb-default{from{transform:scale(1.04)}to{transform:scale(1.14)}}
+
+/* Martinique : glissement le long de la plage + reflets de soleil sur l'eau */
+.hero .fx-martinique.on img,.hero .fx-martinique.out img{transform-origin:30% 50%;animation-name:kb-martinique}
+@keyframes kb-martinique{from{transform:scale(1.08) translate3d(1.5%,0,0)}to{transform:scale(1.16) translate3d(-2.5%,-1%,0)}}
+.hero .fx-martinique .fx-a{background:linear-gradient(115deg,transparent 35%,rgba(255,255,240,.22) 45%,transparent 55%);
+  background-size:250% 250%;mix-blend-mode:soft-light;animation:sweep 9s ease-in-out infinite}
+.hero .fx-martinique .fx-b{background:radial-gradient(circle at 20% 60%,rgba(255,255,255,.18) 0 1px,transparent 2px) 0 0/70px 46px,
+  radial-gradient(circle at 70% 30%,rgba(255,255,255,.14) 0 1px,transparent 2px) 0 0/95px 61px;
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 45%,transparent 62%);mask-image:linear-gradient(90deg,#000 0,#000 45%,transparent 62%);
+  animation:glitter 4s ease-in-out infinite}
+@keyframes sweep{0%{background-position:120% 0}100%{background-position:-60% 0}}
+@keyframes glitter{0%,100%{opacity:.25;background-position:0 0,0 0}50%{opacity:1;background-position:6px 3px,-5px 2px}}
+
+/* Belize : lente plongée vers le Blue Hole + lumière qui ondule sur le récif */
+.hero .fx-belize.on img,.hero .fx-belize.out img{transform-origin:55% 45%;animation-name:kb-belize;animation-duration:26s}
+@keyframes kb-belize{from{transform:scale(1.02)}to{transform:scale(1.22)}}
+.hero .fx-belize .fx-a{background:radial-gradient(ellipse 30% 26% at 55% 45%,rgba(0,40,120,.0) 60%,rgba(120,230,255,.20) 75%,transparent 90%);
+  mix-blend-mode:screen;animation:ripple 6s ease-out infinite}
+.hero .fx-belize .fx-b{background:linear-gradient(115deg,transparent 30%,rgba(200,255,255,.16) 45%,transparent 60%);
+  background-size:260% 260%;mix-blend-mode:soft-light;animation:sweep 12s ease-in-out infinite reverse}
+@keyframes ripple{0%{transform:scale(.85);opacity:0}30%{opacity:1}100%{transform:scale(1.35);opacity:0}}
+
+/* Maroc : travelling qui suit le dromadaire + sable soulevé par le vent + chaleur du couchant */
+.hero .fx-maroc.on img,.hero .fx-maroc.out img{transform-origin:40% 50%;animation-name:kb-maroc;animation-duration:24s}
+@keyframes kb-maroc{from{transform:scale(1.14) translate3d(-3%,0,0)}to{transform:scale(1.08) translate3d(2%,-1%,0)}}
+.hero .fx-maroc .fx-a{background:radial-gradient(circle,rgba(255,226,170,.55) 0 1px,transparent 1.6px) 0 0/110px 70px,
+  radial-gradient(circle,rgba(255,236,190,.4) 0 1px,transparent 1.4px) 30px 20px/160px 95px;
+  -webkit-mask-image:linear-gradient(180deg,transparent 40%,#000 75%);mask-image:linear-gradient(180deg,transparent 40%,#000 75%);
+  animation:sand 7s linear infinite}
+.hero .fx-maroc .fx-b{background:radial-gradient(ellipse 45% 40% at 97% 12%,rgba(255,170,60,.38),transparent 70%);
+  mix-blend-mode:screen;animation:glow 7s ease-in-out infinite alternate}
+@keyframes sand{from{background-position:0 0,30px 20px}to{background-position:-440px 30px,-610px 55px}}
+@keyframes glow{from{opacity:.55}to{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .hero .slide img{animation:none!important}
+  .hero .fx{display:none}
+}
