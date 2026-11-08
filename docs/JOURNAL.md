@@ -2,6 +2,15 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 8 novembre 2026 : catalogue de « Mon séjour » en 3 onglets (demande de Marion)
+
+Les 3 onglets, dans l'ordre :
+1. **Hébergements** : disponibilité vérifiée pour les dates du séjour ;
+2. **Excursions** : activités payantes, réservables en ligne ;
+3. **Lieux à découvrir** : plages, spots photo, restaurants…, sans réservation en ligne.
+
+Chaque onglet a ses sous-filtres par catégorie, et ce qui correspond aux envies du questionnaire est affiché en premier, avec l'étiquette « Selon vos envies ». Le parcours navigateur passe à 61 vérifications.
+
 ## 8 novembre 2026 : « Mon séjour » tout-en-un (demande de Marion)
 
 - Sous les informations générales, **tout le catalogue de la destination** : hébergements, excursions, plages, restaurants, spots photo… Il est filtrable par catégorie, avec un filtre « Suggestions selon vos envies » par défaut.

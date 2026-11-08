@@ -382,3 +382,12 @@ label.chip:focus-within{outline:3px solid var(--sun);outline-offset:2px}
 @media (max-width:520px){.nudge{left:12px;right:12px;bottom:12px;max-width:none}}
 @media (prefers-reduced-motion:reduce){.nudge{animation:none}}
 [hidden]{display:none!important}
+/* « Mon séjour » : catalogue en 3 onglets */
+.tabs3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tabs3 a{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surface);color:var(--ink);text-decoration:none}
+.tabs3 a .n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--bg);font-weight:800;font-size:.85rem}
+.tabs3 a .small{color:var(--muted)}
+.tabs3 a.on{border-color:var(--accent);background:var(--accent-soft)}
+.tabs3 a.on .n{background:var(--accent);color:#fff}
+@media (max-width:760px){.tabs3{grid-template-columns:1fr}}
+.card .tagtop{max-width:calc(100% - 66px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

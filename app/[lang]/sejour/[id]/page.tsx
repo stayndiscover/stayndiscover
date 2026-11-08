@@ -58,17 +58,18 @@ export default async function MonSejour({ params, searchParams }: P) {
       where u.listing_id = any($1::uuid[]) and u.is_active and u.max_guests >= $4 and u.min_nights <= ($3::date - $2::date)
         and not exists (select 1 from public.get_unit_busy_nights(u.id, $2::date, $3::date))`, [accIds, trip.start_date, trip.end_date, travellers]))).map((r) => r.listing_id)) : new Set<string>();
 
-  // Catalogue complet de la destination, filtrable par catégorie, sans quitter « Mon séjour »
+  // Catalogue de la destination en 3 onglets (demande de Marion) : hébergements, excursions payantes,
+  // puis lieux à découvrir sans réservation en ligne (plages, spots photo, restaurants…)
   const wanted = new Set(PREFS.filter((p) => trip.preference_keys.includes(p.key)).flatMap((p) => p.cats));
-  const cat = sp.cat || (wanted.size ? 'envies' : 'tout');
-  const catChips: { key: string; label: string }[] = [
-    ...(wanted.size ? [{ key: 'envies', label: t('suggestions') }] : []),
-    { key: 'tout', label: t('all') }, { key: 'hebergement', label: t('navStay') }, { key: 'excursion', label: t('navExc') },
-    ...[...new Map(destCards.filter((c) => c.type === 'lieu').map((c) => [c.cat_slug, tr(c.cat_name, lang)])).entries()].map(([key, label]) => ({ key, label })),
-  ];
-  const catalogue = destCards.filter((c) => cat === 'tout' ? true : cat === 'envies' ? wanted.has(c.cat_slug) || c.type === 'hebergement'
-    : cat === 'hebergement' || cat === 'excursion' ? c.type === cat : c.cat_slug === cat)
-    .sort((x, y) => (x.type === 'hebergement' && y.type === 'hebergement' ? Number(freeAccIds.has(y.id)) - Number(freeAccIds.has(x.id)) : 0));
+  const TABS = ['hebergement', 'excursion', 'lieu'] as const;
+  const tab = (TABS as readonly string[]).includes(sp.tab ?? '') ? (sp.tab as (typeof TABS)[number]) : 'hebergement';
+  const inTab = destCards.filter((c) => c.type === tab);
+  const subChips = [...new Map(inTab.map((c) => [c.cat_slug, tr(c.cat_name, lang)])).entries()].map(([key, label]) => ({ key, label }));
+  const sub = subChips.some((x) => x.key === sp.cat) ? sp.cat! : '';
+  const catalogue = inTab.filter((c) => !sub || c.cat_slug === sub).sort((x, y) =>
+    tab === 'hebergement' ? Number(freeAccIds.has(y.id)) - Number(freeAccIds.has(x.id))
+      : Number(wanted.has(y.cat_slug)) - Number(wanted.has(x.cat_slug)));
+  const tabHref = (tb: string, c = '') => `${path}?tab=${tb}${c ? `&cat=${c}` : ''}#catalogue`;
   const datesQs = `in=${trip.start_date}&out=${trip.end_date}&tr=${travellers}`;
   const dateL = (d: string) => fDate(d, lang, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -183,20 +184,35 @@ export default async function MonSejour({ params, searchParams }: P) {
             <h2 style={{ fontSize: '1.3rem' }}>{t('discoverAll', tr(trip.dest_name, lang))}</h2>
             <p className="small muted">{t('heartHelp')}</p>
           </div>
-          <div className="chips" role="group" aria-label={t('category')}>
-            {catChips.map((x) => <Link key={x.key} scroll={false} className={`chip ${cat === x.key ? 'on' : ''}`} href={`${path}?cat=${x.key}#catalogue`}>{x.label}</Link>)}
+          <div className="tabs3" role="tablist" aria-label={t('discoverAll', tr(trip.dest_name, lang))}>
+            {TABS.map((tb, i) => (
+              <Link key={tb} role="tab" aria-selected={tab === tb} scroll={false} className={tab === tb ? 'on' : ''} href={tabHref(tb)}>
+                <span className="n">{i + 1}</span>
+                <span className="stack" style={{ gap: 0 }}><b>{t(`tab_${tb}`)} ({destCards.filter((c) => c.type === tb).length})</b><span className="small">{t(`tab_${tb}_d`)}</span></span>
+              </Link>
+            ))}
           </div>
+          {subChips.length > 1 && (
+            <div className="chips" role="group" aria-label={t('category')}>
+              <Link scroll={false} className={`chip ${!sub ? 'on' : ''}`} href={tabHref(tab)}>{t('all')}</Link>
+              {subChips.map((x) => <Link key={x.key} scroll={false} className={`chip ${sub === x.key ? 'on' : ''}`} href={tabHref(tab, x.key)}>{x.label}</Link>)}
+            </div>
+          )}
           {catalogue.length ? (
             <div className="grid g4">{catalogue.map((c) => {
               const on = isSelected(c);
               return (
                 <Card key={c.id} c={c} lang={lang} fav={on} path={path}
-                  heart={<TripHeart lang={lang} trip={trip.id} listing={c.id} path={`${path}?cat=${cat}`} on={on} label={on ? t('removeFav') : t('fav')} />}
+                  heart={<TripHeart lang={lang} trip={trip.id} listing={c.id} path={`${path}?tab=${tab}${sub ? `&cat=${sub}` : ''}`} on={on} label={on ? t('removeFav') : t('fav')} />}
                   extra={c.type === 'hebergement' ? (
                     <div className="row" style={{ gap: 6 }}>
                       <span className={`pill ${freeAccIds.has(c.id) ? 'ok' : 'bad'}`}>{freeAccIds.has(c.id) ? t('available') : t('unavailable')}</span>
                       <Link className="small" href={`${listingHref(lang, c)}?${datesQs}`}>{t('seeDates')}</Link>
-                    </div>) : on ? <span className="pill ok">✓ {t('inThisTrip')}</span> : null} />
+                    </div>) : (on || wanted.has(c.cat_slug)) ? (
+                    <div className="row" style={{ gap: 6 }}>
+                      {on && <span className="pill ok">✓ {t('inThisTrip')}</span>}
+                      {!on && wanted.has(c.cat_slug) && <span className="pill sun">{t('forYou')}</span>}
+                    </div>) : null} />
               );
             })}</div>
           ) : <p className="muted small">{t('noResults')}</p>}

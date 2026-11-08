@@ -92,11 +92,16 @@ const tripId = p.url().match(/sejour\/([0-9a-f-]{36})/)[1];
 ok(await p.locator('.notice.ok').innerText().then((x) => x.includes('créé')), 'séjour créé et enregistré, redirection vers « Mon séjour »');
 ok(await p.locator('#selection .cart-line').count() === 3, 'favoris du séjour : les 2 activités de Martinique + la villa mise en favori');
 // tout se fait dans « Mon séjour » : catalogue complet et cœur en un clic (demande de Marion)
-ok(await p.locator('#catalogue .card').count() >= 2, 'catalogue de la destination affiché sous les informations générales (filtré sur les envies)');
-await p.locator('#catalogue a.chip', { hasText: 'Tout' }).click();
-await p.waitForURL('**cat=tout**');
-const nAll = await p.locator('#catalogue .card').count();
-ok(nAll >= 13, `catalogue complet de la Martinique : ${nAll} fiches (hébergements, excursions, plages, restaurants…)`);
+// catalogue en 3 onglets : hébergements, excursions payantes, lieux à découvrir sans réservation (demande de Marion)
+ok(await p.locator('.tabs3 a').count() === 3 && await p.locator('.tabs3 a.on').innerText().then((x) => x.includes('Hébergements')), 'catalogue : 3 onglets, Hébergements ouvert en premier');
+ok(await p.locator('#catalogue .card').count() >= 3 && await p.locator('#catalogue .card .pill.ok, #catalogue .card .pill.bad').count() >= 3, 'onglet Hébergements : disponibilité vérifiée pour les dates du séjour');
+await p.locator('.tabs3 a', { hasText: 'Excursions' }).click();
+await p.waitForURL('**tab=excursion**');
+ok(await p.locator('#catalogue .card').count() >= 3 && await p.locator('#catalogue .card', { hasText: /Plage|Restaurant/ }).count() === 0, 'onglet Excursions : uniquement les activités payantes');
+await p.locator('.tabs3 a', { hasText: 'Lieux à découvrir' }).click();
+await p.waitForURL('**tab=lieu**');
+const nLieux = await p.locator('#catalogue .card').count();
+ok(nLieux >= 5, `onglet Lieux à découvrir : ${nLieux} plages, restaurants, spots photo…`);
 await p.locator('#catalogue a.chip', { hasText: 'Restaurant' }).click();
 await p.waitForURL('**cat=restaurant**');
 const resto = p.locator('#catalogue .card').first();
