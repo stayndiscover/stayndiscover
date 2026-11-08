@@ -72,6 +72,7 @@ const EXTRA: Record<string, [string, string, string]> = {
   inDest: ['en {0}', 'in {0}', 'en {0}'],
   seoBookOnline: ['Réservation en ligne', 'Book online', 'Reserva online'],
   seoFree: ['Accès libre', 'Free access', 'Acceso libre'],
+  followIg: ['Suivez StayNdiscover sur Instagram', 'Follow StayNdiscover on Instagram', 'Sigue a StayNdiscover en Instagram'],
   skip: ['Aller au contenu', 'Skip to content', 'Ir al contenido'],
   loginToSave: ['Connectez-vous pour enregistrer vos favoris.', 'Sign in to save favourites.', 'Inicia sesión para guardar favoritos.'],
   adultsShort: ['adulte(s)', 'adult(s)', 'adulto(s)'],

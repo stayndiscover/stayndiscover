@@ -1,13 +1,14 @@
 'use client';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { InstagramIcon } from './Icons';
 
 type Slide = { slug: string; name: string; country: string; img: string | null };
 type Labels = { eyebrowAll: string; destination: string; allDest: string; arrival: string; departure: string; travelers: string;
-  searchType: string; typeH: string; typeE: string; exploreBtn: string; title: string; sub: string; group: string };
+  searchType: string; typeH: string; typeE: string; exploreBtn: string; title: string; sub: string; group: string; instagram: string };
 
 /** Bannière d'accueil : diaporama des destinations qui se fige sur la destination choisie. */
-export function Hero({ slides, labels, action, defaults }: { slides: Slide[]; labels: Labels; action: string; defaults: { in: string; out: string } }) {
+export function Hero({ slides, labels, action, defaults, instagramUrl }: { slides: Slide[]; labels: Labels; action: string; defaults: { in: string; out: string }; instagramUrl: string }) {
   const [idx, setIdx] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
   const [fixed, setFixed] = useState<string | null>(null);
@@ -44,6 +45,9 @@ export function Hero({ slides, labels, action, defaults }: { slides: Slide[]; la
         ))}
       </div>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(6,40,36,.78),rgba(6,40,36,.12))' }} />
+      <a className="hero-ig" href={instagramUrl} target="_blank" rel="noopener noreferrer" aria-label={labels.instagram} title={labels.instagram}>
+        <InstagramIcon size={24} /><span>@stayndiscover</span>
+      </a>
       <div className="wrap">
         <span className="eyebrow" style={{ color: 'var(--sun)' }}>{cur ? `${cur.name} · ${cur.country}` : labels.eyebrowAll}</span>
         <h1>{labels.title}</h1>

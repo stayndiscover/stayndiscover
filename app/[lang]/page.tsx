@@ -7,6 +7,7 @@ import { getCategories, getDestinations, homeReviews, providerNames, searchCards
 import { getUserState } from '@/lib/user-data';
 import { isLang, translator, tr, type Lang } from '@/lib/i18n';
 import { countryLabel } from '@/lib/country';
+import { INSTAGRAM_URL, SOCIAL_URLS } from '@/lib/social';
 import { JsonLd } from '@/components/JsonLd';
 import { abs, pageMeta, SITE_NAME, SITE_URL } from '@/lib/seo';
 import { t as tt } from '@/lib/i18n';
@@ -44,7 +45,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const ld = {
     '@graph': [
       { '@type': 'Organization', '@id': `${SITE_URL}/#organisation`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icon-512.png`,
-        email: 'contact@stayndiscover.com', areaServed: dests.map((d) => tr(d.name, lang)) },
+        email: 'contact@stayndiscover.com', sameAs: SOCIAL_URLS, areaServed: dests.map((d) => tr(d.name, lang)) },
       { '@type': 'WebSite', '@id': `${SITE_URL}/#site`, name: SITE_NAME, url: abs(lang), inLanguage: lang, publisher: { '@id': `${SITE_URL}/#organisation` },
         potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${abs(lang, '/explorer')}?q={search_term_string}` },
           'query-input': 'required name=search_term_string' } },
@@ -58,11 +59,12 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       <Hero
         slides={dests.map((d) => ({ slug: d.slug, name: tr(d.name, lang), country: countryLabel(d.country_code, lang), img: destImgUrl(d) }))}
         action={`${p}/explorer`}
+        instagramUrl={INSTAGRAM_URL}
         defaults={{ in: addDays(30), out: addDays(37) }}
         labels={{
           eyebrowAll: dests.map((d) => tr(d.name, lang)).join(' · '), destination: t('destination'), allDest: t('allDest'),
           arrival: t('arrival'), departure: t('departure'), travelers: t('travelers'), searchType: t('searchType'), typeH: t('typeH'),
-          typeE: t('typeE'), exploreBtn: t('exploreBtn'), title: heroText.title || t('heroTitle'), sub: heroText.subtitle || t('heroSub'), group: t('navDest'),
+          typeE: t('typeE'), exploreBtn: t('exploreBtn'), instagram: t('followIg'), title: heroText.title || t('heroTitle'), sub: heroText.subtitle || t('heroSub'), group: t('navDest'),
         }}
       />
 

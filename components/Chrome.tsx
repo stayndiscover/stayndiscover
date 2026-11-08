@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { translator, tr, type Lang } from '@/lib/i18n';
 import type { Me } from '@/lib/auth';
 import type { Destination } from '@/lib/catalog';
-import { CartIcon, HeartIcon, UserIcon } from './Icons';
+import { CartIcon, HeartIcon, InstagramIcon, UserIcon } from './Icons';
+import { INSTAGRAM_URL } from '@/lib/social';
 import { LangSelect, MainNav } from './HeaderClient';
 import { signOut } from '@/app/actions';
 
@@ -77,7 +78,9 @@ export function Footer({ lang, dests }: { lang: Lang; dests: Destination[] }) {
           <Link href={`${p}/informations/cgv`}>{t('cgv')}</Link>
           <Link href={`${p}/informations/mentions`}>{t('mentions')}</Link>
           <Link href={`${p}/informations/confidentialite`}>{t('privacy')}</Link>
-          <span className="small">Instagram · Facebook · TikTok</span>
+          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label={t('followIg')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <InstagramIcon size={18} /> Instagram
+          </a>
         </div>
       </div>
       <div className="wrap small" style={{ paddingBottom: 24, opacity: 0.7 }}>© {new Date().getFullYear()} StayNdiscover</div>
