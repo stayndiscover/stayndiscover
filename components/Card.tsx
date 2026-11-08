@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { art, palFor } from '@/lib/art';
 import type { Card as CardT } from '@/lib/catalog';
@@ -7,10 +8,9 @@ import { FavButton } from './FavButton';
 
 export const listingHref = (lang: Lang, c: { dest_slug: string; slug: string }) => `/${lang}/destinations/${c.dest_slug}/${c.slug}`;
 
-export function Pic({ c, k = '', eager = false }: { c: { id: string; dest_slug: string; cat_slug: string; title: CardT['title']; cover?: string | null }; k?: string; eager?: boolean }) {
+export function Pic({ c, k = '', eager = false, lang = 'fr' }: { c: { id: string; dest_slug: string; cat_slug: string; title: CardT['title']; cover?: string | null }; k?: string; eager?: boolean; lang?: Lang }) {
   if (c.cover && !k) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={storageUrl('listing-media', c.cover)} alt={tr(c.title, 'fr')} loading={eager ? 'eager' : 'lazy'} />;
+    return <Image src={storageUrl('listing-media', c.cover)} alt={tr(c.title, lang)} fill sizes="(max-width: 820px) 100vw, 25vw" priority={eager} quality={70} />;
   }
   return <span style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: art(palFor(c.dest_slug), c.cat_slug, c.id + k) }} />;
 }
@@ -22,7 +22,7 @@ export function Card({ c, lang, fav, path, extra }: { c: CardT; lang: Lang; fav:
   return (
     <article className="card">
       <div className="pic">
-        <Pic c={c} />
+        <Pic c={c} lang={lang} />
         <Link className="cover" href={href} aria-label={title} />
         <span className="tagtop pill grey">{tr(c.cat_name, lang)}</span>
         <FavButton id={c.id} on={fav} path={path} label={fav ? t('removeFav') : t('fav')} />

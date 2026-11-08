@@ -4,7 +4,13 @@ import { requireMe } from '@/lib/auth';
 import { withDb, rows } from '@/lib/db';
 import { fDate, isLang, money, translator, tr, type I18n, type Lang } from '@/lib/i18n';
 
-export const metadata = { title: 'Mon compte' };
+import { privateMeta } from '@/lib/seo';
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: l } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  return privateMeta(lang, '/compte', translator(lang)('account'));
+}
 
 const ORDER: Record<string, string> = { paid: 'paid', awaiting_payment: 'pendingPay', authorized: 'pendingPay', partially_refunded: 'refunded', refunded: 'refunded', cancelled: 'cancelled', failed: 'cancelled', expired: 'cancelled' };
 const STATUS: Record<string, string> = { confirmed: 'confirmed', hold: 'pendingPay', cancelled: 'cancelled', refunded: 'refunded', expired: 'cancelled', failed: 'cancelled' };

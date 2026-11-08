@@ -8,7 +8,13 @@ import { withDb, rows } from '@/lib/db';
 import { fDate, isLang, translator, tr, type I18n, type Lang } from '@/lib/i18n';
 import { deleteTrip } from '@/app/actions';
 
-export const metadata = { title: 'Mes séjours' };
+import { privateMeta } from '@/lib/seo';
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: l } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  return privateMeta(lang, '/sejour', translator(lang)('myStays'));
+}
 const plus = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 
 export default async function Sejour({ params, searchParams }: { params: Promise<{ lang: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
@@ -59,7 +65,7 @@ export default async function Sejour({ params, searchParams }: { params: Promise
         {trips.length ? (
           <div className="grid g3">{trips.map((s) => (
             <article key={s.id} className="card">
-              <div className="pic">{destMap.get(s.dest_slug) && <DestImg d={destMap.get(s.dest_slug)!} />}</div>
+              <div className="pic">{destMap.get(s.dest_slug) && <DestImg d={destMap.get(s.dest_slug)!} lang={lang} />}</div>
               <div className="body">
                 <h3>{tr(s.dest_name, lang)}</h3>
                 <p className="small">{fDate(s.start_date, lang, { day: 'numeric', month: 'short', year: 'numeric' })} → {fDate(s.end_date, lang, { day: 'numeric', month: 'short', year: 'numeric' })}</p>

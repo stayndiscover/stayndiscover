@@ -4,7 +4,13 @@ import { LoginForm, ResetForm, SignupForm } from '@/components/AuthForms';
 import { getMe } from '@/lib/auth';
 import { isLang, translator, type Lang } from '@/lib/i18n';
 
-export const metadata = { title: 'Connexion' };
+import { privateMeta } from '@/lib/seo';
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: l } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  return privateMeta(lang, '/connexion', translator(lang)('login'));
+}
 
 export default async function Connexion({ params, searchParams }: { params: Promise<{ lang: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
   const { lang: l } = await params;

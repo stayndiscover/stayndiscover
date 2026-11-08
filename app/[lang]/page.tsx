@@ -7,6 +7,15 @@ import { getCategories, getDestinations, homeReviews, providerNames, searchCards
 import { getUserState } from '@/lib/user-data';
 import { isLang, translator, tr, type Lang } from '@/lib/i18n';
 import { countryLabel } from '@/lib/country';
+import { JsonLd } from '@/components/JsonLd';
+import { abs, pageMeta, SITE_NAME, SITE_URL } from '@/lib/seo';
+import { t as tt } from '@/lib/i18n';
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: l } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  return pageMeta({ lang, path: '', title: tt(lang, 'seoHomeTitle'), absoluteTitle: true, description: tt(lang, 'seoHomeDesc'), image: '/images/martinique.jpg' });
+}
 
 const addDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 
@@ -32,8 +41,20 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     </div></section>
   );
 
+  const ld = {
+    '@graph': [
+      { '@type': 'Organization', '@id': `${SITE_URL}/#organisation`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icon-512.png`,
+        email: 'contact@stayndiscover.com', areaServed: dests.map((d) => tr(d.name, lang)) },
+      { '@type': 'WebSite', '@id': `${SITE_URL}/#site`, name: SITE_NAME, url: abs(lang), inLanguage: lang, publisher: { '@id': `${SITE_URL}/#organisation` },
+        potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: `${abs(lang, '/explorer')}?q={search_term_string}` },
+          'query-input': 'required name=search_term_string' } },
+      { '@type': 'ItemList', name: t('exploreDest'), itemListElement: dests.map((d, i) => ({ '@type': 'ListItem', position: i + 1,
+        url: abs(lang, `/destinations/${d.slug}`), name: tr(d.name, lang) })) },
+    ],
+  };
   return (
     <>
+      <JsonLd data={ld} />
       <Hero
         slides={dests.map((d) => ({ slug: d.slug, name: tr(d.name, lang), country: countryLabel(d.country_code, lang), img: destImgUrl(d) }))}
         action={`${p}/explorer`}
@@ -49,7 +70,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
         <div className="stack" style={{ gap: 4 }}><span className="eyebrow">{t('navDest')}</span><h2>{t('exploreDest')}</h2></div>
         <div className="grid g3">{dests.map((d) => (
           <Link key={d.slug} className="destcard" href={`${p}/destinations/${d.slug}`}>
-            <div className="art"><DestImg d={d} /></div>
+            <div className="art"><DestImg d={d} lang={lang} /></div>
             <div className="txt"><span className="small">{countryLabel(d.country_code, lang)}</span><h3>{tr(d.name, lang)}</h3>
               <p className="small">{tr(d.description, lang)}</p><span className="btn sun sm" style={{ alignSelf: 'flex-start' }}>{t('discover')}</span></div>
           </Link>))}

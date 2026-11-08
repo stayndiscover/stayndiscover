@@ -99,7 +99,7 @@ nav.main a.on,nav.main a:hover{background:var(--accent-soft);color:var(--accent)
   .iconbtn{width:34px;height:34px}
   .btn.acct{padding:0;width:34px;height:34px}.acct-t{display:none}.acct-i{display:block}
 }
-@media (max-width:1320px){
+@media (max-width:1240px){
   nav.main{display:none;position:absolute;top:68px;left:0;right:0;background:var(--surface);flex-direction:column;padding:10px 20px;border-bottom:1px solid var(--line)}
   nav.main.open{display:flex}
   .burger{display:inline-grid}
@@ -259,3 +259,9 @@ form.inline{display:inline-flex}
 .hero .slide.on{opacity:1}
 .hero .slide.noanim{transition:none}
 a.chip{text-decoration:none;color:inherit;display:inline-block}
+.cart-line .thumb{position:relative}
+/* écrans moyens : le bouton de compte devient une icône pour laisser la place au menu */
+@media (max-width:1380px) and (min-width:1241px){
+  .btn.acct{padding:0;width:38px;height:38px;justify-content:center}.acct-t{display:none}.acct-i{display:block}
+  nav.main a{padding:8px 8px}
+}

@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 type Slide = { slug: string; name: string; country: string; img: string | null };
@@ -38,8 +39,7 @@ export function Hero({ slides, labels, action, defaults }: { slides: Slide[]; la
       <div className="slides" aria-hidden="true">
         {slides.map((s, k) => (
           <div key={s.slug} className={`slide ${k === idx ? 'on' : k === prev ? 'out' : ''} ${prev === null ? 'noanim' : ''}`}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {s.img && <img src={s.img} alt="" loading={k === 0 ? 'eager' : 'lazy'} />}
+            {s.img && <Image src={s.img} alt="" fill sizes="100vw" priority={k === 0} quality={70} />}
           </div>
         ))}
       </div>

@@ -5,20 +5,77 @@ import { Pic, listingHref } from '@/components/Card';
 import { FavButton } from '@/components/FavButton';
 import { MapView } from '@/components/MapView';
 import { ExcursionForm, StayForm } from '@/components/BookingForms';
-import { busyNights, getDetail, getSlots, gmaps, km, nextSlotDates, searchCards } from '@/lib/catalog';
+import { type Detail, busyNights, getDetail, getSlots, gmaps, km, nextSlotDates, searchCards } from '@/lib/catalog';
 import { withDb, rows } from '@/lib/db';
-import { durL, fDate, isLang, translator, tr, type Lang } from '@/lib/i18n';
+import { durL, fDate, isLang, money, t, translator, tr, type Lang } from '@/lib/i18n';
+import { destIn } from '@/lib/country';
+import { destImgUrl } from '@/components/DestImg';
+import { JsonLd } from '@/components/JsonLd';
+import { abs, breadcrumb, clip, pageMeta, SITE_URL } from '@/lib/seo';
 import { storageUrl } from '@/lib/supabase';
 import { getUserState } from '@/lib/user-data';
 import { toggleTripItem } from '@/app/actions';
 
 type P = { params: Promise<{ lang: string; dest: string; slug: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
+const ogImage = (i: Detail) => {
+  const photo = i.media.find((m) => m.kind === 'photo');
+  return photo ? storageUrl('listing-media', photo.storage_path) : destImgUrl({ slug: i.dest_slug, cover_path: null });
+};
+
 export async function generateMetadata({ params }: P) {
-  const { lang, dest, slug } = await params;
-  const d = await getDetail(dest, slug);
-  const l = isLang(lang) ? lang : 'fr';
-  return d ? { title: tr(d.title, l), description: tr(d.summary, l) } : {};
+  const { lang: l, dest, slug } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  const i = await getDetail(dest, slug);
+  if (!i) return {};
+  const title = tr(i.title, lang);
+  const where = destIn(dest, tr(i.dest_name, lang), lang);
+  const from = t(lang, 'from');
+  const price = Number(i.price_from) > 0 ? ` ${from[0].toUpperCase() + from.slice(1)} ${money(i.price_from, lang, i.currency)}${i.type === 'hebergement' ? ' / ' + t(lang, 'perNightShort') : ''}.` : '';
+  // titre le plus précis qui tient dans ~60 caractères (au-delà, Google le coupe)
+  const inWhere = lang === 'fr' ? where : t(lang, 'inDest', where);
+  const options = [`${title} · ${tr(i.cat_name, lang)} ${inWhere}`, `${title} ${inWhere}`, title];
+  const best = options.find((o) => o.length + 16 <= 62);
+  const summary = tr(i.summary, lang).replace(/\.?$/, '.');
+  return pageMeta({ lang, path: `/destinations/${dest}/${slug}`,
+    title: best ?? options.find((o) => o.length <= 62) ?? title, absoluteTitle: !best,
+    description: clip(`${summary}${price} ${i.type === 'lieu' ? '' : t(lang, 'seoBookOnline') + '.'}`),
+    image: ogImage(i), imageAlt: title });
+}
+
+const SCHEMA_LIEU: Record<string, string> = { restaurant: 'Restaurant', plage: 'Beach', 'point-de-vue': 'TouristAttraction', marche: 'TouristAttraction' };
+const DAY_SCHEMA = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/** Données structurées d'une fiche : hébergement, excursion ou lieu, avec position GPS, prix et horaires. */
+function listingLd(i: Detail, lang: Lang) {
+  const url = abs(lang, `/destinations/${i.dest_slug}/${i.slug}`);
+  const img = ogImage(i);
+  const common = {
+    '@id': url + '#fiche', name: tr(i.title, lang), description: tr(i.description, lang) || tr(i.summary, lang), url,
+    image: img ? (img.startsWith('http') ? img : SITE_URL + img) : undefined,
+    geo: i.lat != null ? { '@type': 'GeoCoordinates', latitude: i.lat, longitude: i.lng } : undefined,
+    address: i.address ? { '@type': 'PostalAddress', streetAddress: i.address, addressRegion: tr(i.dest_name, lang) } : undefined,
+    hasMap: gmaps(i),
+    // une note n'est publiée que si elle vient de vrais avis clients
+    aggregateRating: i.rating_count > 0 && i.rating_avg ? { '@type': 'AggregateRating', ratingValue: Number(i.rating_avg), reviewCount: i.rating_count, bestRating: 5 } : undefined,
+  };
+  const offer = (price: number | string | null) => Number(price) > 0
+    ? { '@type': 'Offer', price: Number(price), priceCurrency: i.currency, url, availability: 'https://schema.org/InStock' } : undefined;
+  if (i.type === 'hebergement') {
+    const u = i.units[0];
+    return { '@type': 'LodgingBusiness', ...common, priceRange: i.price_from ? `${t(lang, 'from')} ${money(i.price_from, lang, i.currency)}` : undefined,
+      checkinTime: u?.check_in_time, checkoutTime: u?.check_out_time, numberOfRooms: i.units.length || undefined,
+      makesOffer: offer(i.price_from) };
+  }
+  if (i.type === 'excursion') {
+    return { '@type': 'TouristTrip', ...common, touristType: tr(i.cat_name, lang), offers: offer(i.price_from || i.schedules[0]?.price_adult),
+      provider: i.provider_name ? { '@type': 'Organization', name: i.provider_name } : undefined,
+      itinerary: i.schedules[0]?.meeting_point ? { '@type': 'Place', name: i.schedules[0].meeting_point } : undefined };
+  }
+  const hours = i.opening_hours ? Object.entries(i.opening_hours).filter(([, h]) => h.length).map(([d, h]) => ({
+    '@type': 'OpeningHoursSpecification', dayOfWeek: DAY_SCHEMA[['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].indexOf(d)], opens: h[0][0], closes: h[0][1] })) : undefined;
+  return { '@type': SCHEMA_LIEU[i.cat_slug] || 'TouristAttraction', ...common, openingHoursSpecification: hours,
+    isAccessibleForFree: !(Number(i.price_from) > 0), ...(i.cat_slug === 'restaurant' && i.price_from ? { priceRange: `~${money(i.price_from, lang, i.currency)}` } : {}) };
 }
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -95,10 +152,16 @@ export default async function ListingPage({ params, searchParams }: P) {
   }
 
   const gallery = i.media.filter((m) => m.kind === 'photo').slice(0, 3);
+  const ld = { '@graph': [
+    breadcrumb([{ name: 'StayNdiscover', url: abs(lang) }, { name: tr(i.dest_name, lang), url: abs(lang, `/destinations/${dest}`) },
+      { name: tr(i.cat_name, lang), url: abs(lang, `/explorer?type=${i.type}&dest=${dest}&sub=${i.cat_slug}`) }, { name: title, url: abs(lang, `/destinations/${dest}/${slug}`) }]),
+    listingLd(i, lang),
+  ] };
   return (
     <div className="wrap" style={{ paddingBottom: 40 }}>
+      <JsonLd data={ld} />
       <div className="pagehead">
-        <div className="row small muted"><Link href={`/${lang}/destinations/${dest}`}>{tr(i.dest_name, lang)}</Link><span>›</span><span>{tr(i.cat_name, lang)}</span></div>
+        <nav aria-label="breadcrumb" className="row small muted"><Link href={`/${lang}/destinations/${dest}`}>{tr(i.dest_name, lang)}</Link><span>›</span><Link href={`/${lang}/explorer?type=${i.type}&dest=${dest}&sub=${i.cat_slug}`}>{tr(i.cat_name, lang)}</Link></nav>
         <div className="row between">
           <h1 style={{ fontSize: 'clamp(1.8rem,3.4vw,2.6rem)' }}>{title}</h1>
           <div className="row">

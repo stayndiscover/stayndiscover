@@ -8,7 +8,13 @@ import { withDb, rows } from '@/lib/db';
 import { fDate, isLang, translator, tr, type I18n, type Lang } from '@/lib/i18n';
 import { toggleTripItem } from '@/app/actions';
 
-export const metadata = { title: 'Mes favoris' };
+import { privateMeta } from '@/lib/seo';
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: l } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  return privateMeta(lang, '/favoris', translator(lang)('favTitle'));
+}
 
 export default async function Favoris({ params, searchParams }: { params: Promise<{ lang: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
   const { lang: l } = await params;

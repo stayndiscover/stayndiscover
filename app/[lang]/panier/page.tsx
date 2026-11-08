@@ -6,7 +6,13 @@ import { withDb, rows } from '@/lib/db';
 import { fDate, isLang, money, translator, tr, type I18n, type Lang } from '@/lib/i18n';
 import { removeCartItem } from '@/app/actions';
 
-export const metadata = { title: 'Panier' };
+import { privateMeta } from '@/lib/seo';
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: l } = await params;
+  const lang: Lang = isLang(l) ? l : 'fr';
+  return privateMeta(lang, '/panier', translator(lang)('cartTitle'));
+}
 
 type Line = { id: string; listing_id: string; slug: string; dest_slug: string; cat_slug: string; title: I18n; type: string; provider: string | null;
   start_date: string | null; end_date: string | null; adults: number; children: number; local_time: string | null; local_date: string | null;

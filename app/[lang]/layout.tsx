@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { SITE_NAME, SITE_URL } from '@/lib/seo';
 import { notFound } from 'next/navigation';
 import '../globals.css';
 import { Header, Footer } from '@/components/Chrome';
@@ -6,14 +7,20 @@ import { isLang, t } from '@/lib/i18n';
 import { getDestinations } from '@/lib/catalog';
 import { getUserState } from '@/lib/user-data';
 
+export const viewport: Viewport = { themeColor: '#0b6e63', width: 'device-width', initialScale: 1 };
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   const l = isLang(lang) ? lang : 'fr';
   return {
-    title: { default: 'StayNdiscover', template: '%s · StayNdiscover' },
-    description: t(l, 'heroSub'),
-    icons: { icon: '/images/logo-symbole.png' },
-    alternates: { languages: { fr: '/fr', en: '/en', es: '/es' } },
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
+    title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
+    description: t(l, 'seoHomeDesc'),
+    icons: { icon: [{ url: '/favicon.ico', sizes: 'any' }, { url: '/icon-192.png', type: 'image/png' }], apple: '/apple-touch-icon.png' },
+    manifest: '/manifest.webmanifest',
+    formatDetection: { telephone: false },
+    verification: process.env.GOOGLE_SITE_VERIFICATION ? { google: process.env.GOOGLE_SITE_VERIFICATION } : undefined,
   };
 }
 

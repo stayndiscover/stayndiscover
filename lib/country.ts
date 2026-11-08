@@ -11,3 +11,7 @@ export const countryLabel = (code: string, lang: Lang) => {
   if (known) return known[{ fr: 0, en: 1, es: 2 }[lang]];
   try { return new Intl.DisplayNames([lang], { type: 'region' }).of(code) ?? code; } catch { return code; }
 };
+
+// « en Martinique », « au Belize », « au Maroc » (le français a besoin de la bonne préposition)
+const FR_IN: Record<string, string> = { martinique: 'en Martinique', belize: 'au Belize', maroc: 'au Maroc' };
+export const destIn = (slug: string, name: string, lang: Lang) => (lang === 'fr' ? FR_IN[slug] ?? `– ${name}` : name);
