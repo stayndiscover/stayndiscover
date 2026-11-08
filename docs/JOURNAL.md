@@ -2,6 +2,15 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 8 novembre 2026 : « Mon séjour » tout-en-un (demande de Marion)
+
+- Sous les informations générales, **tout le catalogue de la destination** : hébergements, excursions, plages, restaurants, spots photo… Il est filtrable par catégorie, avec un filtre « Suggestions selon vos envies » par défaut.
+- **Cœur en un clic** pour ajouter ou retirer un élément des favoris du séjour, sans passer par Explorer :
+  - activités et lieux : favori du compte + élément du séjour, avec l'essai gratuit de 5 et la fenêtre à 19,99 € au-delà ;
+  - hébergements : favori du compte, avec la disponibilité vérifiée sur toutes les nuits pour la taille du groupe.
+- La liste « Mes favoris » du séjour regroupe tout, avec la carte et un bouton « Retirer ».
+- Aucune modification de la base n'a été nécessaire. Le parcours navigateur passe à 59 vérifications.
+
 ## 8 novembre 2026 : planificateur, phase 1 (création du séjour et espace « Mon séjour »)
 
 **Base de données** (migration 7, `mise-a-jour-7-sejour.sql`, à exécuter une fois dans Supabase) :

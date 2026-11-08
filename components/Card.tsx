@@ -15,7 +15,7 @@ export function Pic({ c, k = '', eager = false, lang = 'fr' }: { c: { id: string
   return <span style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: art(palFor(c.dest_slug), c.cat_slug, c.id + k) }} />;
 }
 
-export function Card({ c, lang, fav, path, extra }: { c: CardT; lang: Lang; fav: boolean; path: string; extra?: React.ReactNode }) {
+export function Card({ c, lang, fav, path, extra, heart }: { c: CardT; lang: Lang; fav: boolean; path: string; extra?: React.ReactNode; heart?: React.ReactNode }) {
   const t = translator(lang);
   const href = listingHref(lang, c);
   const title = tr(c.title, lang);
@@ -25,7 +25,7 @@ export function Card({ c, lang, fav, path, extra }: { c: CardT; lang: Lang; fav:
         <Pic c={c} lang={lang} />
         <Link className="cover" href={href} aria-label={title} />
         <span className="tagtop pill grey">{tr(c.cat_name, lang)}</span>
-        <FavButton id={c.id} on={fav} path={path} label={fav ? t('removeFav') : t('fav')} />
+        {heart ?? <FavButton id={c.id} on={fav} path={path} label={fav ? t('removeFav') : t('fav')} />}
       </div>
       <div className="body">
         <div className="row small muted">

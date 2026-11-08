@@ -11,7 +11,8 @@ import { PREFS } from '@/lib/dict-planner';
 import { fDate, isLang, money, translator, tr, type Lang } from '@/lib/i18n';
 import { privateMeta } from '@/lib/seo';
 import { getTrip } from '@/lib/trips';
-import { planVoyage, setTripArchived, toggleTripItem } from '@/app/actions';
+import { planVoyage, setTripArchived, toggleTripFavorite } from '@/app/actions';
+import { TripHeart } from '@/components/TripHeart';
 
 type P = { params: Promise<{ lang: string; id: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
@@ -45,41 +46,39 @@ export default async function MonSejour({ params, searchParams }: P) {
   const favSet = new Set(favIds.map((r) => r.listing_id));
   const destCards = await searchCards({ dest: trip.dest_slug });
   const byId = new Map(destCards.map((c) => [c.id, c]));
-  const selection = itemIds.map((r) => byId.get(r.listing_id)).filter((c): c is CardT => !!c);
-  const favsHere = destCards.filter((c) => favSet.has(c.id) && !inTrip.has(c.id) && c.type !== 'hebergement');
-  const wanted = new Set(PREFS.filter((p) => trip.preference_keys.includes(p.key)).flatMap((p) => p.cats));
-  const suggestions = destCards.filter((c) => c.type !== 'hebergement' && !inTrip.has(c.id) && !favSet.has(c.id) && (wanted.size === 0 || wanted.has(c.cat_slug))).slice(0, 8);
+  const selection = [
+    ...destCards.filter((c) => c.type === 'hebergement' && favSet.has(c.id)),
+    ...itemIds.map((r) => byId.get(r.listing_id)).filter((c): c is CardT => !!c),
+  ];
+  const isSelected = (c: CardT) => (c.type === 'hebergement' ? favSet.has(c.id) : inTrip.has(c.id));
 
   // Hébergements libres sur TOUTES les nuits du séjour et assez grands pour le groupe (vérification réelle, § 5.4)
-  let freeAccs: CardT[] = [];
-  if (['find', 'undecided'].includes(trip.accommodation_mode)) {
-    const accIds = destCards.filter((c) => c.type === 'hebergement').map((c) => c.id);
-    if (accIds.length) {
-      const ok = await withDb(null, (db) => rows<{ listing_id: string }>(db, `select distinct u.listing_id from public.accommodation_units u
-        where u.listing_id = any($1::uuid[]) and u.is_active and u.max_guests >= $4 and u.min_nights <= ($3::date - $2::date)
-          and not exists (select 1 from public.get_unit_busy_nights(u.id, $2::date, $3::date))`, [accIds, trip.start_date, trip.end_date, travellers]));
-      const okSet = new Set(ok.map((r) => r.listing_id));
-      freeAccs = destCards.filter((c) => okSet.has(c.id));
-    }
-  }
+  const accIds = destCards.filter((c) => c.type === 'hebergement').map((c) => c.id);
+  const freeAccIds = accIds.length ? new Set((await withDb(null, (db) => rows<{ listing_id: string }>(db, `select distinct u.listing_id from public.accommodation_units u
+      where u.listing_id = any($1::uuid[]) and u.is_active and u.max_guests >= $4 and u.min_nights <= ($3::date - $2::date)
+        and not exists (select 1 from public.get_unit_busy_nights(u.id, $2::date, $3::date))`, [accIds, trip.start_date, trip.end_date, travellers]))).map((r) => r.listing_id)) : new Set<string>();
+
+  // Catalogue complet de la destination, filtrable par catégorie, sans quitter « Mon séjour »
+  const wanted = new Set(PREFS.filter((p) => trip.preference_keys.includes(p.key)).flatMap((p) => p.cats));
+  const cat = sp.cat || (wanted.size ? 'envies' : 'tout');
+  const catChips: { key: string; label: string }[] = [
+    ...(wanted.size ? [{ key: 'envies', label: t('suggestions') }] : []),
+    { key: 'tout', label: t('all') }, { key: 'hebergement', label: t('navStay') }, { key: 'excursion', label: t('navExc') },
+    ...[...new Map(destCards.filter((c) => c.type === 'lieu').map((c) => [c.cat_slug, tr(c.cat_name, lang)])).entries()].map(([key, label]) => ({ key, label })),
+  ];
+  const catalogue = destCards.filter((c) => cat === 'tout' ? true : cat === 'envies' ? wanted.has(c.cat_slug) || c.type === 'hebergement'
+    : cat === 'hebergement' || cat === 'excursion' ? c.type === cat : c.cat_slug === cat)
+    .sort((x, y) => (x.type === 'hebergement' && y.type === 'hebergement' ? Number(freeAccIds.has(y.id)) - Number(freeAccIds.has(x.id)) : 0));
   const datesQs = `in=${trip.start_date}&out=${trip.end_date}&tr=${travellers}`;
-  const exploreHref = `/${lang}/explorer?dest=${trip.dest_slug}&${datesQs}`;
   const dateL = (d: string) => fDate(d, lang, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const tripToggle = (cid: string, on: boolean) => (
-    <form action={toggleTripItem}>
-      <input type="hidden" name="lang" value={lang} /><input type="hidden" name="path" value={path} />
-      <input type="hidden" name="trip" value={trip.id} /><input type="hidden" name="listing" value={cid} />
-      <button className={`btn sm ${on ? 'ghost' : ''}`}>{on ? t('remove') : `＋ ${t('addThis')}`}</button>
-    </form>
-  );
   const fact = (k: string, v: React.ReactNode) => <div className="fact" key={k}><div className="k">{k}</div><div className="v">{v}</div></div>;
   const accLabel = trip.accommodation_mode === 'staynd' && trip.acc_title ? tr(trip.acc_title, lang)
     : trip.accommodation_mode === 'elsewhere' ? `${trip.ext_acc_name} · ${trip.ext_acc_address}`
       : t(trip.accommodation_mode === 'find' ? 'accFind' : 'accUndecided');
   const prog = [
     { k: t('monSejour'), s: `${trip.nights} ${t('nightsS')}`, href: '#infos', done: true },
-    { k: t('progMesRecherches'), s: tr(trip.dest_name, lang), href: exploreHref, done: false },
+    { k: t('progMesRecherches'), s: tr(trip.dest_name, lang), href: '#catalogue', done: false },
     { k: t('progFavoris'), s: `${selection.length} ${t('elements')}`, href: '#selection', done: selection.length > 0 },
     { k: t('progPlanning'), s: status?.unlocked ? t('unlockedBadge') : money(status?.price ?? 19.99, lang), href: '#planning', done: false },
     { k: t('progResas'), s: String(bookingsN[0]?.n ?? 0), href: `/${lang}/compte`, done: (bookingsN[0]?.n ?? 0) > 0 },
@@ -158,47 +157,50 @@ export default async function MonSejour({ params, searchParams }: P) {
               href={gmaps({ lat: trip.ext_acc_lat, lng: trip.ext_acc_lng, address: trip.ext_acc_address })}>{t('openGmaps')}</a>
           </section>
         )}
-        {['find', 'undecided'].includes(trip.accommodation_mode) && (
-          <section className="stack">
-            <div className="row between"><h2 style={{ fontSize: '1.3rem' }}>{t('accAvail')}</h2><span className="pill ok">{t('checkedLive')}</span></div>
-            {freeAccs.length ? (
-              <div className="grid g4">{freeAccs.map((c) => (
-                <Card key={c.id} c={c} lang={lang} fav={favSet.has(c.id)} path={path}
-                  extra={<Link className="btn sm" href={`${listingHref(lang, c)}?${datesQs}`}>{t('seeDates')}</Link>} />))}
-              </div>
-            ) : <p className="muted small">{t('accAvailNone', travellers)}</p>}
-          </section>
-        )}
-
         <section id="selection" className="panel stack">
-          <div className="row between">
-            <div className="stack" style={{ gap: 2 }}><h2 style={{ fontSize: '1.3rem' }}>{t('selection')}</h2><p className="small muted">{t('selectionHelp')}</p></div>
-            <Link className="btn ghost sm" href={exploreHref}>{t('exploreForTrip')}</Link>
-          </div>
+          <div className="stack" style={{ gap: 2 }}><h2 style={{ fontSize: '1.3rem' }}>{t('progFavoris')} · {selection.length}</h2><p className="small muted">{t('selectionHelp')}</p></div>
           {selection.length ? (
             <div className="stack" style={{ gap: 8 }}>{selection.map((c) => (
               <div key={c.id} className="cart-line">
                 <div className="thumb"><Pic c={c} lang={lang} /></div>
                 <div className="stack" style={{ gap: 2 }}><Link href={listingHref(lang, c)} style={{ color: 'inherit', fontWeight: 700 }}>{tr(c.title, lang)}</Link>
-                  <span className="small muted">{tr(c.cat_name, lang)}{c.booking_required && <> · <span className="pill sun">{t('bookReq')}</span></>}</span></div>
-                {tripToggle(c.id, true)}
+                  <span className="small muted">{tr(c.cat_name, lang)}{c.booking_required && <> · <span className="pill sun">{t('bookReq')}</span></>}
+                    {c.type === 'hebergement' && <> · <span className={`pill ${freeAccIds.has(c.id) ? 'ok' : 'bad'}`}>{freeAccIds.has(c.id) ? t('available') : t('unavailable')}</span></>}</span></div>
+                <form action={toggleTripFavorite}>
+                  <input type="hidden" name="lang" value={lang} /><input type="hidden" name="trip" value={trip.id} />
+                  <input type="hidden" name="listing" value={c.id} /><input type="hidden" name="path" value={path} />
+                  <button className="btn ghost sm">{t('remove')}</button>
+                </form>
               </div>))}
             </div>
-          ) : <p className="muted small">{t('none')}</p>}
+          ) : <p className="muted small">{t('pickBelow')}</p>}
           {selection.some((c) => c.lat != null) && <MapView label={t('mapTitle')} height={300}
             points={selection.filter((c) => c.lat != null).map((c, n) => ({ lat: c.lat!, lng: c.lng!, label: String(n + 1), title: tr(c.title, lang), href: listingHref(lang, c) }))} />}
         </section>
 
-        {favsHere.length > 0 && (
-          <section className="stack"><h2 style={{ fontSize: '1.3rem' }}>{t('favNotInTrip')}</h2>
-            <div className="grid g4">{favsHere.map((c) => <Card key={c.id} c={c} lang={lang} fav path={path} extra={tripToggle(c.id, false)} />)}</div>
-          </section>
-        )}
-        {suggestions.length > 0 && (
-          <section className="stack"><h2 style={{ fontSize: '1.3rem' }}>{t('suggestions')}</h2>
-            <div className="grid g4">{suggestions.map((c) => <Card key={c.id} c={c} lang={lang} fav={favSet.has(c.id)} path={path} extra={tripToggle(c.id, false)} />)}</div>
-          </section>
-        )}
+        <section id="catalogue" className="stack">
+          <div className="stack" style={{ gap: 2 }}>
+            <h2 style={{ fontSize: '1.3rem' }}>{t('discoverAll', tr(trip.dest_name, lang))}</h2>
+            <p className="small muted">{t('heartHelp')}</p>
+          </div>
+          <div className="chips" role="group" aria-label={t('category')}>
+            {catChips.map((x) => <Link key={x.key} scroll={false} className={`chip ${cat === x.key ? 'on' : ''}`} href={`${path}?cat=${x.key}#catalogue`}>{x.label}</Link>)}
+          </div>
+          {catalogue.length ? (
+            <div className="grid g4">{catalogue.map((c) => {
+              const on = isSelected(c);
+              return (
+                <Card key={c.id} c={c} lang={lang} fav={on} path={path}
+                  heart={<TripHeart lang={lang} trip={trip.id} listing={c.id} path={`${path}?cat=${cat}`} on={on} label={on ? t('removeFav') : t('fav')} />}
+                  extra={c.type === 'hebergement' ? (
+                    <div className="row" style={{ gap: 6 }}>
+                      <span className={`pill ${freeAccIds.has(c.id) ? 'ok' : 'bad'}`}>{freeAccIds.has(c.id) ? t('available') : t('unavailable')}</span>
+                      <Link className="small" href={`${listingHref(lang, c)}?${datesQs}`}>{t('seeDates')}</Link>
+                    </div>) : on ? <span className="pill ok">✓ {t('inThisTrip')}</span> : null} />
+              );
+            })}</div>
+          ) : <p className="muted small">{t('noResults')}</p>}
+        </section>
       </div>
     </div>
   );

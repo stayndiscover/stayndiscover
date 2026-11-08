@@ -229,6 +229,45 @@ export async function toggleTripItem(f: FormData) {
   revalidatePath('/', 'layout');
 }
 
+/**
+ * Cœur de l'espace « Mon séjour ». Hébergement : favori du compte (candidat pour le séjour).
+ * Activité, lieu, restaurant… : favori du compte ET élément du séjour (au-delà de l'essai gratuit : fenêtre de déblocage).
+ */
+export async function toggleTripFavorite(f: FormData) {
+  const me = await needMe(f);
+  const lang = langOf(f);
+  const trip = str(f, 'trip'), listing = str(f, 'listing');
+  let paywall = false;
+  await withDb(me.id, async (db) => {
+    const l = await one<{ type: string; owns: boolean }>(db, `select l.type::text as type,
+        exists (select 1 from public.trips t where t.id = $2 and t.user_id = $3 and t.destination_id = l.destination_id) as owns
+      from public.listings l where l.id = $1`, [listing, trip, me.id]);
+    if (!l?.owns) throw new Error('FORBIDDEN: séjour inconnu');
+    if (l.type === 'hebergement') {
+      const del = await db.query('delete from public.favorites where user_id = $1 and listing_id = $2', [me.id, listing]);
+      if (!del.rowCount) await db.query('insert into public.favorites (user_id, listing_id) values ($1, $2) on conflict do nothing', [me.id, listing]);
+      return;
+    }
+    const del = await db.query('delete from public.trip_items where trip_id = $1 and listing_id = $2', [trip, listing]);
+    if (del.rowCount) {
+      await db.query('delete from public.favorites where user_id = $1 and listing_id = $2', [me.id, listing]);
+      return;
+    }
+    await db.query('savepoint add_item');
+    try {
+      await db.query(`insert into public.trip_items (trip_id, listing_id, sort_order)
+        values ($1, $2, coalesce((select max(sort_order) + 1 from public.trip_items where trip_id = $1), 1))`, [trip, listing]);
+      await db.query('insert into public.favorites (user_id, listing_id) values ($1, $2) on conflict do nothing', [me.id, listing]);
+    } catch (e) {
+      if (!String(e instanceof Error ? e.message : e).startsWith('PAYWALL')) throw e;
+      await db.query('rollback to savepoint add_item');
+      paywall = true;
+    }
+  });
+  if (paywall) redirect(withParams(safePath(str(f, 'path'), lang), { offre: 'planificateur', sejour: trip }));
+  revalidatePath('/', 'layout');
+}
+
 /** Ajoute ou remplace des paramètres dans une adresse interne. */
 function withParams(path: string, params: Record<string, string>) {
   const u = new URL(path, 'http://x');
