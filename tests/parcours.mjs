@@ -138,7 +138,7 @@ await p.locator('#planning').getByRole('button', { name: /Planifier mon voyage/ 
 await p.waitForSelector('dialog.paywall[open]');
 ok(true, '« Planifier mon voyage » demande le paiement de 19,99 €');
 await p.screenshot({ path: `${SHOTS}/paywall.png` });
-await p.getByRole('button', { name: /Débloquer pour 19,99/ }).click();
+await p.getByRole('button', { name: /Débloquer mon séjour Premium – 19,99/ }).click();
 await p.waitForSelector('dialog.paywall .notice.info');
 ok(true, 'demande de déblocage enregistrée (en attendant Stripe)');
 await p.keyboard.press('Escape');
