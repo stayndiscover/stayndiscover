@@ -2,6 +2,10 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-08 — Nouvelle fenêtre « séjour Premium »
+- Fenêtre de paiement refaite d’après la maquette de Marion : titre selon la destination (« Découvrez l’île autrement ! », le Belize, le Maroc), encadré « Nos pépites locales » avec la photo de la destination, 4 avantages illustrés, prix, bouton « Débloquer mon séjour Premium ». FR/EN/ES, ordinateur et téléphone.
+- Pictogrammes dessinés pour le site (pas de logo Google).
+
 ## 2026-11-08 — Fenêtre de paiement : explication de l’itinéraire
 - Au 6ᵉ cœur (activité, excursion ou lieu), la fenêtre de paiement explique maintenant que l’itinéraire Google Maps est créé jour par jour à partir des favoris (FR/EN/ES).
 - Testé : 5 cœurs ajoutés sans paiement, le 6ᵉ ouvre la fenêtre.

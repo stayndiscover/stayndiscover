@@ -391,4 +391,41 @@ label.chip:focus-within{outline:3px solid var(--sun);outline-offset:2px}
 .tabs3 a.on .n{background:var(--accent);color:#fff}
 @media (max-width:760px){.tabs3{grid-template-columns:1fr}}
 .card .tagtop{max-width:calc(100% - 66px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.paywall-how{background:var(--bg);border-left:3px solid var(--sun);border-radius:8px;padding:10px 12px;font-size:.92rem;margin:0}
+/* Fenêtre « séjour Premium » (maquette de Marion, novembre 2026) */
+dialog.paywall{max-width:540px;max-height:calc(100dvh - 24px);overflow:auto}
+.paywall-in{gap:14px;padding:26px 24px 22px}
+.pw-title{font-weight:800;letter-spacing:-.01em;font-size:1.75rem;line-height:1.15;margin:0;padding-right:44px;position:relative}
+.pw-hl{position:relative;white-space:nowrap}
+.pw-hl::after{content:"";position:absolute;left:-2%;right:-4%;bottom:-6px;height:6px;border-radius:50%;border-bottom:3px solid #f2b02f}
+.pw-spark{display:inline-block;width:30px;height:22px;vertical-align:top;margin-left:4px}
+.pw-lead{margin:0;color:var(--muted);font-size:1rem}
+.pw-gem{display:flex;gap:14px;align-items:stretch;background:var(--accent-soft);border-radius:16px;border-left:4px solid #f2b02f;padding:8px 14px 8px 8px}
+.pw-gem-pic{position:relative;flex:0 0 38%;min-height:118px;border-radius:12px;overflow:hidden;background:#cfe5e1}
+.pw-gem-pic img{object-fit:cover}
+.pw-pin{position:absolute;left:8px;bottom:8px;width:28px;height:28px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.pw-gem-txt{display:flex;flex-direction:column;justify-content:center;gap:4px}
+.pw-gem-txt h3{margin:0;font-size:1.2rem;color:var(--accent)}
+.pw-gem-txt p{margin:0;font-size:.92rem;line-height:1.4}
+.pw-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.pw-items li{display:flex;align-items:center;gap:12px}
+.pw-check{flex:0 0 28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:.85rem}
+.pw-ico{flex:0 0 44px;height:44px;display:grid;place-items:center;padding-right:12px;border-right:1px solid var(--line);box-sizing:content-box}
+.pw-ico svg{width:40px;height:40px}
+.pw-it{display:flex;flex-direction:column;gap:2px;line-height:1.3}
+.pw-it b{font-size:1.02rem}
+.pw-it span{font-size:.88rem;color:var(--muted)}
+.pw-price{display:flex;align-items:center;gap:16px;padding:12px 18px;border-radius:16px;background:var(--accent-soft)}
+.pw-price b{font-size:2.2rem;color:var(--accent);padding-right:16px;border-right:1px solid rgba(15,107,92,.25);white-space:nowrap}
+.pw-price span{font-size:.95rem;line-height:1.3}
+.pw-keep{margin:0;color:var(--ok);font-weight:700}
+.pw-buy{display:flex;align-items:center;justify-content:center;gap:10px;font-size:1.05rem;padding:14px 18px;border-radius:999px}
+.pw-buy span:last-child{font-size:1.4rem;line-height:1}
+.pw-later{border-radius:999px}
+@media (max-width:520px){
+  .paywall-in{padding:22px 16px 18px}
+  .pw-title{font-size:1.4rem}
+  .pw-gem{flex-direction:column;padding:8px}
+  .pw-gem-pic{flex-basis:auto;min-height:130px}
+  .pw-ico{flex-basis:34px;height:34px;padding-right:8px}.pw-ico svg{width:32px;height:32px}
+  .pw-price b{font-size:1.8rem}
+}

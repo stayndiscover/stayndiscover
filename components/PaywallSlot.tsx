@@ -1,6 +1,7 @@
 import { PlannerPaywall } from './PlannerPaywall';
 import { getMe } from '@/lib/auth';
 import { withDb, one } from '@/lib/db';
+import { destImgUrl } from './DestImg';
 import { money, translator, type Lang } from '@/lib/i18n';
 
 export type PlannerStatus = { unlocked: boolean; used: number; free_items: number; price: number; currency: string };
@@ -20,9 +21,13 @@ export async function PaywallSlot({ lang, basePath, sp }: { lang: Lang; basePath
   const keep = new URLSearchParams(Object.entries(sp).filter(([k, v]) => v && !['offre', 'attente'].includes(k)) as [string, string][]);
   const closeHref = `${basePath}${keep.size ? '?' + keep : ''}`;
   const price = money(st.price, lang, st.currency);
+  const d = await withDb(me.id, (db) => one<{ slug: string; cover_path: string | null }>(db,
+    'select d.slug, d.cover_path from public.trips t join public.destinations d on d.id = t.destination_id where t.id = $1', [sp.sejour])).catch(() => null);
+  const where = d && ['martinique', 'belize', 'maroc'].includes(d.slug) ? t(`pwWhere_${d.slug}`) : t('pwWhere_any');
   return (
-    <PlannerPaywall lang={lang} trip={sp.sejour} path={closeHref} closeHref={closeHref} pending={sp.attente === '1'}
-      l={{ title: t('pwTitle'), text: t('pwText', st.free_items), how: t('pwHow'), b1: t('pwB1'), b2: t('pwB2'), b3: t('pwB3'), keep: t('pwKeep'),
-        once: t('pwOnce'), btn: t('pwBtn', price), later: t('pwLater'), pending: t('pwPending'), close: t('close'), price }} />
+    <PlannerPaywall lang={lang} trip={sp.sejour} path={closeHref} closeHref={closeHref} pending={sp.attente === '1'} img={d ? destImgUrl(d) : null}
+      l={{ title: t('pwTitle', where), text: t('pwText'), gemT: t('pwGemT'), gem: t('pwGem'),
+        items: [[t('pwB1T'), t('pwB1')], [t('pwB2T'), t('pwB2')], [t('pwB3T'), t('pwB3')], [t('pwB4T'), t('pwB4')]],
+        keep: t('pwKeep'), once: t('pwOnce'), btn: t('pwBtn', price), later: t('pwLater'), pending: t('pwPending'), close: t('close'), price }} />
   );
 }
