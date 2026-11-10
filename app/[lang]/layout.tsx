@@ -6,6 +6,7 @@ import { Header, Footer } from '@/components/Chrome';
 import { isLang, t } from '@/lib/i18n';
 import { getDestinations } from '@/lib/catalog';
 import { getUserState } from '@/lib/user-data';
+import { MotionLayer } from '@/components/MotionLayer';
 
 export const viewport: Viewport = { themeColor: '#0b6e63', width: 'device-width', initialScale: 1 };
 
@@ -29,8 +30,11 @@ export default async function LangLayout({ children, params }: { children: React
   if (!isLang(lang)) notFound();
   const [{ me, favs, cartCount }, dests] = await Promise.all([getUserState(), getDestinations()]);
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
       <head>
+        {/* Animations : activées avant l'affichage (pas de clignotement) ; désactivées si l'appareil demande moins de mouvements,
+            et retirées d'office après 4 s si le script des animations ne s'est pas lancé (le contenu reste toujours visible). */}
+        <script dangerouslySetInnerHTML={{ __html: "try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){var d=document.documentElement;d.classList.add('fx-on');setTimeout(function(){if(!window.__fx)d.classList.remove('fx-on')},4000)}}catch(e){}" }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -41,6 +45,7 @@ export default async function LangLayout({ children, params }: { children: React
         <Header lang={lang} me={me} favCount={favs.size} cartCount={cartCount} />
         <main id="contenu">{children}</main>
         <Footer lang={lang} dests={dests} />
+        <MotionLayer />
       </body>
     </html>
   );

@@ -429,3 +429,43 @@ dialog.paywall{max-width:540px;max-height:calc(100dvh - 24px);overflow:auto}
   .pw-ico{flex-basis:34px;height:34px;padding-right:8px}.pw-ico svg{width:32px;height:32px}
   .pw-price b{font-size:1.8rem}
 }
+
+/* ===== Animations (nov. 2026) : apparitions au défilement, parallaxe, survols, avion du logo =====
+   Rien n'est caché sans la classe html.fx-on (posée par un petit script, jamais si « réduire les animations »). */
+.fx-on :is(main .block .eyebrow, main .block h2, main .grid > *, main .destcard, main .why > *, main .plan-band, main .panel, main .card, footer.bottom .wrap > *):not(.fx-in){
+  opacity:0;transform:translate3d(0,28px,0)}
+.fx-on :is(main .block .eyebrow, main .block h2, main .grid > *, main .destcard, main .why > *, main .plan-band, main .panel, main .card, footer.bottom .wrap > *){
+  transition:opacity .8s cubic-bezier(.2,.7,.2,1) var(--fx-d,0ms),transform .9s cubic-bezier(.2,.7,.2,1) var(--fx-d,0ms),clip-path 1.1s cubic-bezier(.2,.7,.2,1) var(--fx-d,0ms),box-shadow .3s}
+/* variantes : zoom pour les destinations, glissements alternés pour les atouts, ouverture pour le bandeau */
+.fx-on main .destcard:not(.fx-in){transform:scale(.92) translate3d(0,24px,0)}
+.fx-on main .why > :nth-child(odd):not(.fx-in){transform:translate3d(-36px,0,0)}
+.fx-on main .why > :nth-child(even):not(.fx-in){transform:translate3d(36px,0,0)}
+.fx-on main .plan-band:not(.fx-in){transform:scale(.97);clip-path:inset(6% 4% round 24px)}
+.fx-on main .plan-band.fx-in{clip-path:inset(0 round 24px)}
+.fx-on main .block h2:not(.fx-in){transform:translate3d(0,18px,0)}
+/* la photo d'une carte se « pose » en douceur quand la carte apparaît */
+.fx-on main .card .pic img{transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+.fx-on main .card:not(.fx-in) .pic img{transform:scale(1.12)}
+/* parallaxe : un peu de marge pour que l'image ne laisse jamais de vide en bougeant */
+.fx-on main .destcard .art{inset:-8% 0;will-change:transform}
+.fx-on main .hero .slides,.fx-on main .hero .bgart{will-change:transform}
+
+/* survols et clics, discrets */
+.card,.destcard{transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s}
+@media (hover:hover){
+  .card.fx-in:hover,.fx-on .card.fx-in:hover,html:not(.fx-on) .card:hover{transform:translate3d(0,-5px,0);box-shadow:0 14px 34px rgba(8,40,36,.14)}
+  .card .pic img{transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+  .card:hover .pic img{transform:scale(1.05)}
+  .destcard:hover .art img{transform:scale(1.06)}
+  .destcard .art img{transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+  .btn{transition:background .2s,transform .2s,box-shadow .2s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(8,40,36,.16)}
+  .iconbtn{transition:transform .2s}
+  .iconbtn:hover{transform:scale(1.08)}
+}
+.btn:active,.iconbtn:active{transform:scale(.96)}
+
+/* l'avion du logo */
+.fly-plane{position:fixed;left:0;top:0;z-index:21;pointer-events:none;opacity:0;height:auto;transform-origin:50% 50%;
+  will-change:transform;filter:drop-shadow(0 6px 6px rgba(8,40,36,.22))}
+@media (prefers-reduced-motion: reduce){.fly-plane{display:none}}

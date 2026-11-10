@@ -2,6 +2,14 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-10 — Animations au défilement, parallaxe et avion du logo
+- Nouvelle couche components/MotionLayer.tsx + section « Animations » de globals.css. Aucun contenu, aucune mise en page ni fonctionnalité modifiés.
+- Apparitions au défilement : titres et cartes en fondu et glissement (en cascade), destinations en zoom, atouts en glissements alternés gauche/droite, bandeau « Planifier » qui s’ouvre, colonnes du pied de page.
+- Parallaxe : photo du bandeau d’accueil et des en-têtes de destination, images des cartes destinations.
+- Survols discrets : cartes qui se soulèvent, photos qui zooment légèrement, boutons et cœurs.
+- Avion : public/images/logo-avion.png est découpé dans le vrai logo (logo.png). Il part exactement de l’avion du logo (le logo reste intact), puis descend avec le défilement en ondulant. Il revient au logo quand on remonte.
+- Légèreté : seulement transform/opacity, un seul requestAnimationFrame qui s’arrête à l’arrêt du défilement. Rien ne bouge et rien n’est caché si l’appareil demande moins d’animations ; sécurité : si le script ne démarre pas, le contenu redevient visible après 4 s.
+
 ## 2026-11-10 — Effet « nom géant » annulé
 - À la demande de Marion, l’accueil revient exactement à la version précédente (fondu entre les photos, sans nom géant).
 
