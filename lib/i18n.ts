@@ -8,6 +8,7 @@ const IDX: Record<Lang, number> = { fr: 0, en: 1, es: 2 };
 
 // Textes ajoutés pour la vraie application (en plus de ceux de la maquette)
 const EXTRA: Record<string, [string, string, string]> = {
+  veilHint: ['Faites défiler pour lever le voile', 'Scroll to lift the veil', 'Desliza para levantar el velo'],
   signup: ['Créer un compte', 'Create an account', 'Crear una cuenta'],
   haveAccount: ['J\'ai déjà un compte', 'I already have an account', 'Ya tengo una cuenta'],
   email: ['Adresse e-mail', 'Email address', 'Correo electrónico'],

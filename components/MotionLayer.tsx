@@ -75,7 +75,9 @@ export function MotionLayer() {
 
     const frame = () => {
       raf = 0;
-      const sy = window.scrollY, vh = window.innerHeight, vw = window.innerWidth;
+      // sur l'accueil, la « piste » du drap d'ouverture ne compte pas : l'avion du logo part après le dévoilement
+      const runway = document.querySelector<HTMLElement>('.veil-runway')?.offsetHeight ?? 0;
+      const sy = Math.max(0, window.scrollY - runway), vh = window.innerHeight, vw = window.innerWidth;
       // — parallaxe : le décor du bandeau descend plus lentement que la page
       if (sy !== last) {
         for (const el of pars) if (sy < vh * 1.5) el.style.transform = `translate3d(0,${(sy * 0.35).toFixed(1)}px,0)`;
@@ -94,7 +96,7 @@ export function MotionLayer() {
         if (lr && lr.width) {
           const w0 = lr.width * PLANE_IN_LOGO.w;
           const sx = lr.left + lr.width * PLANE_IN_LOGO.x, sy0 = lr.top + lr.height * PLANE_IN_LOGO.y;
-          const doc = document.documentElement.scrollHeight - vh;
+          const doc = document.documentElement.scrollHeight - vh - runway;
           const p = clamp(doc > 0 ? sy / doc : 0);
           const t = smooth(0, Math.min(420, vh * 0.6), sy); // décollage dès les premiers pixels de défilement
           const mobile = vw < 700;

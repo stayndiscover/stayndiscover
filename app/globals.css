@@ -469,3 +469,29 @@ dialog.paywall{max-width:540px;max-height:calc(100dvh - 24px);overflow:auto}
 .fly-plane{position:fixed;left:0;top:0;z-index:21;pointer-events:none;opacity:0;height:auto;transform-origin:50% 50%;
   will-change:transform;filter:drop-shadow(0 6px 6px rgba(8,40,36,.22))}
 @media (prefers-reduced-motion: reduce){.fly-plane{display:none}}
+
+/* ===== Ouverture de l'accueil : drap tracté par l'avion (nov. 2026) ===== */
+.veil,.veil-runway{display:none}
+.fx-on .veil-runway{display:block;height:115svh}
+@media (max-width:700px){.fx-on .veil-runway{height:95svh}}
+.fx-on .veil-pin > .hero{position:sticky;top:var(--hdr,68px);min-height:calc(100svh - var(--hdr,68px))}
+.fx-on .veil{display:block;position:fixed;inset:0;z-index:30;pointer-events:none;background:#fbfaf6}
+.fx-on .veil.ready{background:transparent}
+.veil canvas{position:absolute;inset:0;width:100%;height:100%}
+.veil-ropes{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.veil-ropes path{fill:none;stroke:#6f7f7c;stroke-width:1.6;stroke-linecap:round;opacity:.85}
+.veil-plane{position:absolute;left:0;top:0;width:200px;transform-origin:50% 50%;will-change:transform;
+  transform:translate3d(calc(100vw - 260px),calc(100vh - 170px),0) rotate(32deg) scaleX(-1)}
+.veil-plane img{display:block;width:100%;height:auto;filter:drop-shadow(0 16px 14px rgba(10,40,36,.28)) drop-shadow(0 3px 3px rgba(10,40,36,.25))}
+/* hélice qui tourne (flou de rotation au nez de l'avion) */
+.veil-prop{position:absolute;left:82.5%;top:22%;width:5%;height:58%;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(255,255,255,.55),rgba(220,235,235,.15) 60%,transparent 72%);
+  animation:veil-prop .09s linear infinite}
+@keyframes veil-prop{0%{transform:scaleY(1)}50%{transform:scaleY(.35)}100%{transform:scaleY(1)}}
+.veil-hint{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px;
+  color:var(--accent);font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:.02em;text-align:center;transition:opacity .2s}
+.veil-hint img{width:min(240px,48vw);height:auto}
+.veil-hint i{width:22px;height:34px;border:2px solid currentColor;border-radius:12px;position:relative;opacity:.8}
+.veil-hint i::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:currentColor;animation:veil-wheel 1.6s ease-in-out infinite}
+@keyframes veil-wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(10px);opacity:0}100%{opacity:0}}
+html[data-veil=on] .fly-plane{opacity:0!important}

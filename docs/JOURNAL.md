@@ -2,6 +2,12 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-10 — Ouverture de l’accueil : le voile tracté par l’avion
+- components/VeilIntro.tsx : un drap blanc couvre l’écran à l’arrivée sur l’accueil (logo + « Faites défiler pour lever le voile »). En faisant défiler, l’avion du logo (public/images/avion-3d.png : même avion, agrandi et ombré en relief, hélice qui tourne) tire le coin bas-droit au bout de deux câbles et soulève le drap en diagonale vers le haut à gauche.
+- Drap calculé en 3D (maillage + éclairage WebGL) : rouleau du pli, rabat qui se soulève vers l’avion avec perspective, plis qui rayonnent vers le coin tiré, ondulations légères, ombre portée sur la page dévoilée.
+- Pendant le dévoilement (« piste » de 115 % de la hauteur d’écran, 95 % sur téléphone), le bandeau d’accueil reste immobile (sticky) puis la page défile normalement. Le bandeau occupe désormais au moins toute la hauteur de l’écran.
+- L’avion du logo (MotionLayer) ne part qu’après le dévoilement. Sans WebGL : drap plat de secours. Si l’appareil demande moins d’animations : ni drap, ni piste.
+
 ## 2026-11-10 — Animations au défilement, parallaxe et avion du logo
 - Nouvelle couche components/MotionLayer.tsx + section « Animations » de globals.css. Aucun contenu, aucune mise en page ni fonctionnalité modifiés.
 - Apparitions au défilement : titres et cartes en fondu et glissement (en cascade), destinations en zoom, atouts en glissements alternés gauche/droite, bandeau « Planifier » qui s’ouvre, colonnes du pied de page.

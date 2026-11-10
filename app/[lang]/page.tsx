@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Hero } from '@/components/Hero';
+import { VeilIntro } from '@/components/VeilIntro';
 import { DestImg, destImgUrl } from '@/components/DestImg';
 import { Grid } from '@/components/Card';
 import { Newsletter } from '@/components/Newsletter';
@@ -57,6 +58,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   return (
     <>
       <JsonLd data={ld} />
+      <VeilIntro labels={{ hint: t('veilHint') }}>
       <Hero
         slides={dests.map((d) => ({ slug: d.slug, name: tr(d.name, lang), country: countryLabel(d.country_code, lang), img: destImgUrl(d), video: heroVideo(d.slug) }))}
         action={`${p}/explorer`}
@@ -68,6 +70,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           typeE: t('typeE'), exploreBtn: t('exploreBtn'), instagram: t('followIg'), title: heroText.title || t('heroTitle'), sub: heroText.subtitle || t('heroSub'), group: t('navDest'),
         }}
       />
+      </VeilIntro>
 
       <section className="block"><div className="wrap stack" style={{ gap: 24 }}>
         <div className="stack" style={{ gap: 4 }}><span className="eyebrow">{t('navDest')}</span><h2>{t('exploreDest')}</h2></div>
