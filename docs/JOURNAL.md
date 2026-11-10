@@ -2,6 +2,12 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-10 — Accueil : nom géant derrière le premier plan (effet Pinterest)
+- Le nom de la destination (MARTINIQUE, BELIZE, MAROC — traduit selon la langue) s’affiche en très grand, glissé entre la photo et son premier plan : palmiers (Martinique), récif (Belize), dune et chameau (Maroc).
+- Premiers plans détourés dans public/images/premier-plan/. Pour la vidéo du Maroc, le chameau est suivi image par image (planche de 61 masques) et la vidéo est redessinée dans un canvas découpé.
+- Transition : la nouvelle photo monte depuis le bas, l’ancien nom sort par le haut, le nouveau arrive par le bas. Pas d’animation si le visiteur a demandé moins de mouvements.
+- La phrase d’accroche (h1) reste en dessous, un peu plus petite.
+
 ## 2026-11-08 — Nouvelle fenêtre « séjour Premium »
 - Fenêtre de paiement refaite d’après la maquette de Marion : titre selon la destination (« Découvrez l’île autrement ! », le Belize, le Maroc), encadré « Nos pépites locales » avec la photo de la destination, 4 avantages illustrés, prix, bouton « Débloquer mon séjour Premium ». FR/EN/ES, ordinateur et téléphone.
 - Pictogrammes dessinés pour le site (pas de logo Google).

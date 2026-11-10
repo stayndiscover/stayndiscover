@@ -287,14 +287,14 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
    Diaporama vivant : mouvement de caméra lent + effets d'ambiance
    (désactivés si le visiteur a demandé à réduire les animations)
    ===================================================================== */
-.hero .slide img{will-change:transform;transform-origin:50% 50%}
-.hero .slide.on img,.hero .slide.out img{animation:kb-default 22s ease-in-out infinite alternate}
+.hero .slide :is(img,.fg-shade){will-change:transform;transform-origin:50% 50%}
+.hero .slide.on :is(img,.fg-shade),.hero .slide.out :is(img,.fg-shade){animation:kb-default 22s ease-in-out infinite alternate}
 .hero .fx{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s}
 .hero .slide.on .fx,.hero .slide.out .fx{opacity:1}
 @keyframes kb-default{from{transform:scale(1.04)}to{transform:scale(1.14)}}
 
 /* Martinique : glissement le long de la plage + reflets de soleil sur l'eau */
-.hero .fx-martinique.on img,.hero .fx-martinique.out img{transform-origin:30% 50%;animation-name:kb-martinique}
+.hero .fx-martinique.on :is(img,.fg-shade),.hero .fx-martinique.out :is(img,.fg-shade){transform-origin:30% 50%;animation-name:kb-martinique}
 @keyframes kb-martinique{from{transform:scale(1.08) translate3d(1.5%,0,0)}to{transform:scale(1.16) translate3d(-2.5%,-1%,0)}}
 .hero .fx-martinique .fx-a{background:linear-gradient(115deg,transparent 35%,rgba(255,255,240,.22) 45%,transparent 55%);
   background-size:250% 250%;mix-blend-mode:soft-light;animation:sweep 9s ease-in-out infinite}
@@ -306,7 +306,7 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
 @keyframes glitter{0%,100%{opacity:.25;background-position:0 0,0 0}50%{opacity:1;background-position:6px 3px,-5px 2px}}
 
 /* Belize : lente plongée vers le Blue Hole + lumière qui ondule sur le récif */
-.hero .fx-belize.on img,.hero .fx-belize.out img{transform-origin:55% 45%;animation-name:kb-belize;animation-duration:26s}
+.hero .fx-belize.on :is(img,.fg-shade),.hero .fx-belize.out :is(img,.fg-shade){transform-origin:55% 45%;animation-name:kb-belize;animation-duration:26s}
 @keyframes kb-belize{from{transform:scale(1.02)}to{transform:scale(1.22)}}
 .hero .fx-belize .fx-a{background:radial-gradient(ellipse 30% 26% at 55% 45%,rgba(0,40,120,.0) 60%,rgba(120,230,255,.20) 75%,transparent 90%);
   mix-blend-mode:screen;animation:ripple 6s ease-out infinite}
@@ -315,7 +315,7 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
 @keyframes ripple{0%{transform:scale(.85);opacity:0}30%{opacity:1}100%{transform:scale(1.35);opacity:0}}
 
 /* Maroc : travelling qui suit le dromadaire + sable soulevé par le vent + chaleur du couchant */
-.hero .fx-maroc.on img,.hero .fx-maroc.out img{transform-origin:40% 50%;animation-name:kb-maroc;animation-duration:24s}
+.hero .fx-maroc.on :is(img,.fg-shade),.hero .fx-maroc.out :is(img,.fg-shade){transform-origin:40% 50%;animation-name:kb-maroc;animation-duration:24s}
 @keyframes kb-maroc{from{transform:scale(1.14) translate3d(-3%,0,0)}to{transform:scale(1.08) translate3d(2%,-1%,0)}}
 .hero .fx-maroc .fx-a{background:radial-gradient(circle,rgba(255,226,170,.55) 0 1px,transparent 1.6px) 0 0/110px 70px,
   radial-gradient(circle,rgba(255,236,190,.4) 0 1px,transparent 1.4px) 30px 20px/160px 95px;
@@ -327,13 +327,13 @@ dialog.paywall::backdrop{background:rgba(5,25,23,.55);backdrop-filter:blur(3px)}
 @keyframes glow{from{opacity:.55}to{opacity:1}}
 
 @media (prefers-reduced-motion:reduce){
-  .hero .slide img{animation:none!important}
+  .hero .slide :is(img,.fg-shade){animation:none!important}
   .hero .fx{display:none}
 }
 /* vidéo de la bannière : par-dessus la photo, qui reste en secours pendant le chargement */
 .hero .slide-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s}
 .hero .slide.on .slide-video,.hero .slide.out .slide-video{opacity:1}
-.hero .slide.has-video img{animation:none!important;transform:none}
+.hero .slide.has-video :is(img,.fg-shade){animation:none!important;transform:none}
 .hero .slide.has-video .fx{display:none}
 .side-logout{width:100%;text-align:left;padding:9px 12px;border-radius:10px;background:none;border:0;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
 .side-logout:hover{background:#fae3e0;color:var(--bad)}
@@ -429,3 +429,31 @@ dialog.paywall{max-width:540px;max-height:calc(100dvh - 24px);overflow:auto}
   .pw-ico{flex-basis:34px;height:34px;padding-right:8px}.pw-ico svg{width:32px;height:32px}
   .pw-price b{font-size:1.8rem}
 }
+/* Accueil : nom géant de la destination derrière le premier plan + transition verticale (référence Pinterest, nov. 2026) */
+.hero-names{--avail:calc(min(100vw,1200px) - 40px);--fsmax:min(190px,calc(var(--avail) / (var(--nmin) * .7)))}
+.hero-names .bigname-space{height:calc(var(--fsmax) * .86);margin:-6px 0 -4px}
+.hero-names h1{font-size:clamp(1.5rem,2.8vw,2.3rem);max-width:30ch}
+.hero .bigname{position:absolute;left:0;right:0;top:var(--bn-top,110px);height:calc(var(--fsmax) * .86);pointer-events:none}
+.hero .bigname .in{max-width:1200px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:flex-end;overflow:hidden}
+.hero .bigname span{display:block;font-family:var(--display);font-weight:800;text-transform:uppercase;white-space:nowrap;color:#fff;
+  font-size:min(190px,calc(var(--avail) / (var(--n) * .7)));line-height:.86;letter-spacing:-.015em;padding-bottom:.02em;
+  text-shadow:0 8px 40px rgba(0,0,0,.18)}
+.hero .slide.on .bigname span{animation:hn-rise 1s cubic-bezier(.2,.8,.2,1) .45s both}
+.hero .slide.out .bigname span{animation:hn-leave .7s cubic-bezier(.7,0,.3,1) both}
+.hero .slide.noanim .bigname span{animation:none}
+@keyframes hn-rise{from{transform:translateY(110%)}to{transform:none}}
+@keyframes hn-leave{from{transform:none}to{transform:translateY(-110%)}}
+.hero .slide-fg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.hero .slide.has-video .slide-fg-video{opacity:0;transition:opacity .8s}
+.hero .slide.has-video.on .slide-fg-video,.hero .slide.has-video.out .slide-fg-video{opacity:1}
+/* la nouvelle photo monte depuis le bas, l'ancienne glisse légèrement vers le haut */
+.hero-names .slide{opacity:1;transform:none;clip-path:inset(100% 0 0 0);z-index:0;transition:none}
+.hero-names .slide.out{clip-path:inset(0);z-index:1;opacity:1;transition:none}
+.hero-names .slide.on{clip-path:inset(0);z-index:2;animation:hn-reveal 1.1s cubic-bezier(.77,0,.18,1)}
+.hero-names .slide.noanim{animation:none}
+@keyframes hn-reveal{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0)}}
+@media (max-width:640px){.hero-names{--avail:calc(100vw - 40px)}}
+.hero-names .slides{z-index:0}
+.hero-names .hero-shade{display:none}
+.hero .slide-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(6,40,36,.78),rgba(6,40,36,.12))}
+.hero .fg-shade{mask-size:cover;mask-position:center;mask-repeat:no-repeat;-webkit-mask-size:cover;-webkit-mask-position:center;-webkit-mask-repeat:no-repeat}
