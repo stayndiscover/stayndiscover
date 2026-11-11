@@ -2,6 +2,9 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Ouverture : correction iPhone (découpe du logo décalée)
+- Sur iPhone, la hauteur du calque fixe du voile peut différer de window.innerHeight (barre d’adresse repliée) : le drap était alors étiré alors que la découpe du logo ne l’était pas, d’où une coupe en biais à côté du coin du voile. Le drap, l’avion et la découpe utilisent maintenant la taille réelle du calque (clientWidth/clientHeight, suivie par ResizeObserver).
+
 ## 2026-11-11 — Ouverture : le logo glisse sous le coin du voile (sans fond blanc ajouté)
 - Retour au rendu d’origine du drap (le calque blanc séparé est supprimé).
 - Le logo est au-dessus du drap mais découpé (clip-path evenodd) : partie encore posée MOINS le contour exact du coin soulevé, calculé à chaque image. Il disparaît donc au fur et à mesure sous l’angle du voile.

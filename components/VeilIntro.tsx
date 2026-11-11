@@ -107,7 +107,9 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
 
     const resize = () => {
       setHdr();
-      W = window.innerWidth; H = window.innerHeight;
+      // taille réelle du calque du voile (sur iPhone, elle peut différer de innerHeight quand la barre d'adresse
+      // se replie) : drap, avion et découpe du logo utilisent tous exactement la même mesure
+      W = veil.clientWidth || window.innerWidth; H = veil.clientHeight || window.innerHeight;
       dpr = Math.min(window.devicePixelRatio || 1, W < 700 ? 1.75 : 1.5);
       cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
       cols = W > 800 ? 72 : 44;
@@ -327,10 +329,11 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
     const onResize = () => { resize(); kick(); };
     window.addEventListener('scroll', kick, { passive: true });
     window.addEventListener('resize', onResize);
+    const ro = new ResizeObserver(onResize); ro.observe(veil);
     veil.classList.add('ready');
     kick();
     return () => {
-      window.removeEventListener('scroll', kick); window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', kick); window.removeEventListener('resize', onResize); ro.disconnect();
       if (raf) cancelAnimationFrame(raf);
       delete root.dataset.veil;
     };
