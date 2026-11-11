@@ -480,13 +480,14 @@ dialog.paywall{max-width:540px;max-height:calc(100dvh - 24px);overflow:auto}
 .veil canvas{position:absolute;inset:0;width:100%;height:100%}
 .veil-ropes{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .veil-ropes path{fill:none;stroke:#6f7f7c;stroke-width:1.6;stroke-linecap:round;opacity:.85}
-.veil-plane{position:absolute;left:0;top:0;width:200px;transform-origin:50% 50%;will-change:transform;
-  transform:translate3d(calc(100vw - 260px),calc(100vh - 170px),0) rotate(32deg) scaleX(-1)}
-.veil-plane img{display:block;width:100%;height:auto;filter:drop-shadow(0 16px 14px rgba(10,40,36,.28)) drop-shadow(0 3px 3px rgba(10,40,36,.25))}
-/* hélice qui tourne (flou de rotation au nez de l'avion) */
-.veil-prop{position:absolute;left:82.5%;top:22%;width:5%;height:58%;border-radius:50%;
-  background:radial-gradient(ellipse at center,rgba(255,255,255,.55),rgba(220,235,235,.15) 60%,transparent 72%);
-  animation:veil-prop .09s linear infinite}
+.veil-plane{position:absolute;left:0;top:0;width:170px;will-change:transform;
+  transform:translate3d(calc(100vw - 230px),calc(100vh - 230px),0);filter:drop-shadow(22px 30px 12px rgba(10,40,36,.26)) drop-shadow(4px 6px 3px rgba(10,40,36,.22))}
+.veil-plane-in{position:relative;transform-origin:50% 50%;transform:rotate(-148deg)}
+.veil-plane-in img{display:block;width:100%;height:auto}
+/* hélice vue du dessus : barre floue qui tourne devant le nez */
+.veil-prop{position:absolute;left:96%;top:38.5%;width:3%;height:23%;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(60,70,72,.45),rgba(60,70,72,.18) 55%,transparent 72%);
+  animation:veil-prop .08s linear infinite}
 @keyframes veil-prop{0%{transform:scaleY(1)}50%{transform:scaleY(.35)}100%{transform:scaleY(1)}}
 .veil-hint{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px;
   color:var(--accent);font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:.02em;text-align:center;transition:opacity .2s}

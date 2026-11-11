@@ -2,6 +2,10 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-10 — Ouverture : avion vu du dessus
+- L’avion qui tracte le voile est maintenant vu du dessus : public/images/avion-dessus.svg (même modèle à aile haute que le logo, turquoise du logo, relief par dégradés, pare-brise, feux de bout d’aile, hélice qui tourne). Son ombre reste toujours en bas à droite, comme sous une lumière venant du haut à gauche. Remplace avion-3d.png.
+- Le petit avion du logo qui descend avec le défilement reste celui du logo (vu de profil).
+
 ## 2026-11-10 — Ouverture de l’accueil : le voile tracté par l’avion
 - components/VeilIntro.tsx : un drap blanc couvre l’écran à l’arrivée sur l’accueil (logo + « Faites défiler pour lever le voile »). En faisant défiler, l’avion du logo (public/images/avion-3d.png : même avion, agrandi et ombré en relief, hélice qui tourne) tire le coin bas-droit au bout de deux câbles et soulève le drap en diagonale vers le haut à gauche.
 - Drap calculé en 3D (maillage + éclairage WebGL) : rouleau du pli, rabat qui se soulève vers l’avion avec perspective, plis qui rayonnent vers le coin tiré, ondulations légères, ombre portée sur la page dévoilée.

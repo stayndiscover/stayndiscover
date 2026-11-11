@@ -67,6 +67,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
   const veilRef = useRef<HTMLDivElement>(null);
   const canRef = useRef<HTMLCanvasElement>(null);
   const planeRef = useRef<HTMLDivElement>(null);
+  const planeInRef = useRef<HTMLDivElement>(null);
   const ropeRef = useRef<SVGPathElement>(null);
   const rope2Ref = useRef<SVGPathElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
@@ -246,19 +247,22 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       const span = Math.min(W, H) * 0.06;
       place(span * 0.9, span, k1, 0); place(span * 0.9, -span, k2, 0);
       const depth = 1500 / (1500 - corner[2]);
-      const planeW = clamp(Math.min(W, H) * 0.3, 130, 240) * Math.min(depth, 1.6);
+      // planeW = longueur de l'avion (nez → queue) ; l'envergure fait 1,1 fois cette longueur
+      const planeW = clamp(Math.min(W, H) * 0.22, 100, 190) * Math.min(depth, 1.6);
       const ropeL = clamp(Math.min(W, H) * 0.17, 70, 150);
       const bob = Math.sin(t * 1.7) * 4 * wob, roll = Math.sin(t * 1.3) * 2.5;
       const px = corner[0] + ux * (ropeL + planeW * 0.5) + vx * bob;
       const py = corner[1] + uy * (ropeL + planeW * 0.5) + vy * bob;
-      const ang = Math.atan2(uy, ux) * 57.2958 + 180;
+      const ang = Math.atan2(uy, ux) * 57.2958; // vu du dessus : le nez suit simplement la direction de vol
       const plane = planeRef.current;
       if (plane) {
         plane.style.width = `${planeW}px`;
-        plane.style.transform = `translate3d(${(px - planeW / 2).toFixed(1)}px,${(py - planeW * 0.213).toFixed(1)}px,0) rotate(${(ang + roll).toFixed(2)}deg) scaleX(-1)`;
+        // l'ombre reste en bas à droite (lumière venant du haut à gauche) : seul l'intérieur tourne
+        plane.style.transform = `translate3d(${(px - planeW / 2).toFixed(1)}px,${(py - planeW * 0.55).toFixed(1)}px,0)`;
+        if (planeInRef.current) planeInRef.current.style.transform = `rotate(${(ang + roll).toFixed(2)}deg) scale(${(1 + 0.02 * Math.sin(t * 1.7)).toFixed(3)})`;
       }
       // câbles : de la queue de l'avion vers deux points du bord du drap, avec un léger fléchissement
-      const tx = px - ux * planeW * 0.4, ty = py - uy * planeW * 0.4;
+      const tx = px - ux * planeW * 0.42, ty = py - uy * planeW * 0.42;
       const sag = 10 + 8 * Math.sin(t * 2.1);
       const curve = (k: Float32Array) => {
         const mx = (tx + k[0]) / 2 + vx * 0 + 0, my = (ty + k[1]) / 2 + sag;
@@ -293,9 +297,12 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         <canvas ref={canRef} />
         <svg className="veil-ropes"><path ref={ropeRef} /><path ref={rope2Ref} /></svg>
         <div className="veil-plane" ref={planeRef}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/avion-3d.png" alt="" width={445} height={190} />
-          <span className="veil-prop" />
+          <div className="veil-plane-in" ref={planeInRef}>
+            {/* l'avion du logo, vu du dessus (même modèle, mêmes couleurs) */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/avion-dessus.svg" alt="" width={400} height={440} />
+            <span className="veil-prop" />
+          </div>
         </div>
         <div className="veil-hint" ref={hintRef}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
