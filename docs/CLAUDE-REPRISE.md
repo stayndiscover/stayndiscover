@@ -109,7 +109,7 @@ Fonctions SQL déjà prêtes pour les fonctions serveur de la phase 2 :
 1. **Mise en ligne par Marion**, en suivant `docs/GUIDE-MISE-EN-LIGNE.md` (GitHub, Supabase, Vercel, compte admin). Si elle donne l'accès à son dépôt GitHub, Claude peut y envoyer le code.
 2. **Ensuite**, dans l'ordre :
    - Stripe Connect (Checkout, webhook vers `authorize_order`, `mark_order_paid` et `fail_order`, transferts) : le bouton « Payer » du panier attend cette étape, ainsi que le déblocage du planificateur à 19,99 € ;
-   - espace prestataire et administration ;
+   - ~~espace prestataire et administration~~ : **fait le 11 novembre 2026** (migration 8 à installer dans Supabase, voir JOURNAL) ;
    - planificateur automatique (Google Routes) et PDF ;
    - e-mails (Resend) et synchronisation iCal planifiée ;
    - nom de domaine.

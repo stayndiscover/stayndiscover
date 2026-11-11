@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 // Doublure locale de Supabase Auth, UNIQUEMENT pour les tests sur un ordinateur sans Supabase.
 // Elle répond aux mêmes adresses que Supabase Auth (/auth/v1/...) pour que le site
 // utilise exactement le même code qu'en production. Jamais déployée.
@@ -41,9 +43,61 @@ const send = (res, code, body) => {
 };
 const err = (res, code, msg, error_code) => send(res, code, { code, error_code, msg, message: msg });
 
+const STORE = '/tmp/sd-storage';
+async function storage(req, res, url) {
+  const rest = decodeURIComponent(url.pathname.slice('/storage/v1/object/'.length));
+  if (req.method === 'GET' && rest.startsWith('public/')) {
+    const f = path.join(STORE, rest.slice(7));
+    if (!f.startsWith(STORE) || !fs.existsSync(f)) return err(res, 404, 'not found');
+    const ext = path.extname(f).slice(1);
+    res.writeHead(200, { 'content-type': ext === 'svg' ? 'image/svg+xml' : `image/${ext === 'jpg' ? 'jpeg' : ext}` });
+    return res.end(fs.readFileSync(f));
+  }
+  const u = await fromBearer(req);
+  if (!u) return err(res, 403, 'invalid JWT', 'bad_jwt');
+  const chunks = []; for await (const c of req) chunks.push(c);
+  const raw = Buffer.concat(chunks);
+  const [bucket, ...parts] = rest.split('/');
+  // mêmes règles que les politiques SQL de la migration 8
+  const allowed = async (name) => {
+    if (bucket !== 'listing-media' && bucket !== 'avatars') return true;
+    const c = await pool.connect();
+    try {
+      await c.query('begin');
+      await c.query(`select set_config('request.jwt.claim.sub', $1, true), set_config('request.jwt.claim.role', 'authenticated', true)`, [u.id]);
+      await c.query('set local role authenticated');
+      return (await c.query(`select public.${bucket === 'avatars' ? 'logo' : 'media'}_path_editable($1) as ok`, [name])).rows[0].ok;
+    } finally { await c.query('rollback'); c.release(); }
+  };
+  if (req.method === 'POST' || req.method === 'PUT') {
+    const name = parts.join('/');
+    if (!(await allowed(name))) return err(res, 403, 'new row violates row-level security policy', 'Unauthorized');
+    let data = raw;
+    const ct = req.headers['content-type'] || '';
+    if (ct.startsWith('multipart/form-data')) {
+      const boundary = '--' + ct.split('boundary=')[1].replace(/;.*$/, '');
+      const part = raw.toString('latin1').split(boundary).find((x) => /filename="/.test(x.slice(0, 400))) ?? '';
+      data = Buffer.from(part.slice(part.indexOf('\r\n\r\n') + 4).replace(/\r\n$/, ''), 'latin1');
+    }
+    const f = path.join(STORE, bucket, name);
+    fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, data);
+    return send(res, 200, { Key: `${bucket}/${name}`, Id: randomUUID() });
+  }
+  if (req.method === 'DELETE') {
+    const b = JSON.parse(raw.toString() || '{}');
+    for (const name of b.prefixes || []) { if (await allowed(name)) fs.rmSync(path.join(STORE, bucket, name), { force: true }); }
+    return send(res, 200, []);
+  }
+  return err(res, 404, 'not found');
+}
+
 http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') return send(res, 204);
   const url = new URL(req.url, 'http://x');
+  // ——— Stockage (imitation minimale de Supabase Storage, pour tester l'envoi de photos en local)
+  if (url.pathname.startsWith('/storage/v1/object/')) {
+    try { return await storage(req, res, url); } catch (e) { console.error(e); return err(res, 500, String(e.message || e)); }
+  }
   let body = {};
   try { const chunks = []; for await (const c of req) chunks.push(c); if (chunks.length) body = JSON.parse(Buffer.concat(chunks).toString()); } catch {}
   try {

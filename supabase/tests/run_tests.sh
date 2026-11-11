@@ -9,6 +9,7 @@ for f in migrations/*.sql; do psql -q -v ON_ERROR_STOP=1 -d "$DB" -f "$f"; done
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -f tests/10_scenarios.sql
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -f tests/30_planificateur.sql
 psql -q -v ON_ERROR_STOP=1 -d "$DB" -f tests/40_sejour.sql
+psql -q -v ON_ERROR_STOP=1 -d "$DB" -f tests/50_espaces.sql
 
 # Concurrence : deux voyageurs paient au même instant les mêmes dates
 psql -q -d "$DB" -f tests/20_concurrence_setup.sql

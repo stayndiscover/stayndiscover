@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { AccountNav } from '@/components/AccountNav';
 import { ProfileForm } from '@/components/ProfileForm';
 import { requireMe } from '@/lib/auth';
@@ -23,8 +24,8 @@ export default async function Compte({ params }: { params: Promise<{ lang: strin
   const [bookings, orders] = await withDb(me.id, async (db) => [
     await rows<{ id: string; title: I18n; type: string; status: string; amount: string; first: string | null; last: string | null; slot: string | null; number: string }>(db,
       `select b.id, l.title, b.type, b.status, b.amount, o.number, to_char(lower(b.stay), 'YYYY-MM-DD') as first, to_char(upper(b.stay), 'YYYY-MM-DD') as last,
-              to_char(s.starts_at, 'YYYY-MM-DD"T"HH24:MI') as slot
-         from public.bookings b join public.listings l on l.id = b.listing_id join public.orders o on o.id = b.order_id
+              to_char(s.starts_at at time zone dd.timezone, 'YYYY-MM-DD"T"HH24:MI') as slot
+         from public.bookings b join public.listings l on l.id = b.listing_id join public.destinations dd on dd.id = l.destination_id join public.orders o on o.id = b.order_id
          left join public.excursion_slots s on s.id = b.slot_id
         where b.user_id = $1 and b.status <> 'expired' order by b.created_at desc`, [me.id]),
     await rows<{ number: string; status: string; total: string; created_at: string }>(db,
@@ -39,8 +40,12 @@ export default async function Compte({ params }: { params: Promise<{ lang: strin
           <span className="eyebrow">{t(`role_${me.role}`)}</span>
           <h1 style={{ fontSize: '2rem' }}>{t('hello')} {me.full_name?.split(' ')[0] ?? ''}</h1>
         </div>
-        {me.role === 'provider' && <div className="notice info">{t('proSoon')}</div>}
-        {me.role === 'admin' && <div className="notice info">{t('adminSoon')}</div>}
+        {(me.role === 'provider' || me.role === 'admin') && (
+          <div className="row" style={{ gap: 10 }}>
+            {me.role === 'admin' && <Link className="btn" href={`/${lang}/admin`}>{t('bo_admin')} →</Link>}
+            <Link className={`btn ${me.role === 'admin' ? 'ghost' : ''}`} href={`/${lang}/pro`}>{t('bo_pro')} →</Link>
+          </div>
+        )}
         <ProfileForm lang={lang} me={me} l={{ myProfile: t('myProfile'), fullName: t('fullName'), email: t('email'), phone: t('phone'),
           prefLang: t('prefLang'), newPass: t('newPass'), pwdHint: t('pwdHint'), save: t('save') }} />
         <div className="panel stack">

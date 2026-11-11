@@ -1,5 +1,6 @@
 import { BASE } from './dict-base';
 import { PLANNER } from './dict-planner';
+import { BACK } from './dict-back';
 
 export const LANGS = ['fr', 'en', 'es'] as const;
 export type Lang = (typeof LANGS)[number];
@@ -109,7 +110,7 @@ const EXTRA: Record<string, [string, string, string]> = {
   childrenShort: ['enfant(s)', 'child(ren)', 'niño(s)'],
 };
 
-const DICT = { ...BASE, ...EXTRA, ...PLANNER };
+const DICT = { ...BASE, ...EXTRA, ...PLANNER, ...BACK };
 
 export function t(lang: Lang, key: string, ...args: (string | number)[]) {
   const v = DICT[key];

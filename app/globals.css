@@ -520,3 +520,36 @@ html[data-veil=on] .fly-plane{opacity:0!important}
 .veil-hint > span,.veil-hint > i{animation:lp-rise .7s ease 4.3s both;filter:opacity(var(--hint,1))}
 /* calque du logo, découpé : il disparaît sous le coin soulevé du voile */
 .veil-logo{position:absolute;inset:0}
+
+/* ===== Espaces prestataire et administration ===== */
+.back .side-nav{position:sticky;top:calc(var(--hdr,68px) + 16px)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.kpi{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none}
+a.kpi:hover{border-color:var(--accent)}
+.kpi b{font-size:1.5rem;font-family:var(--display)}
+.filters select,.filters input{width:auto}
+.back-table td,.back-table th{vertical-align:middle}
+.back-table tr.off td{opacity:.55}
+.back-table .thumb{width:64px}
+.back-table .thumb img,.back-table .thumb span{display:block;width:56px;height:42px;object-fit:cover;border-radius:8px;background:var(--bg)}
+.inline-form{display:inline-flex;gap:6px;align-items:center;margin:0}
+.i18n-field{display:flex;flex-direction:column;gap:6px}
+.i18n-field .lbl,.lbl{font-size:.86rem;font-weight:700;color:var(--ink)}
+.i18n-line{flex-direction:row!important;align-items:flex-start;gap:8px!important}
+.lang-tag{flex:none;width:30px;padding-top:9px;font-size:.72rem;font-weight:800;color:var(--accent);letter-spacing:.04em}
+.hours-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.media-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.media-grid li{display:flex;flex-direction:column;gap:6px}
+.media-grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:var(--bg)}
+.media-video{display:grid;place-items:center;aspect-ratio:4/3;border-radius:10px;background:var(--ink);color:#fff;font-size:.8rem;padding:8px;text-align:center;word-break:break-all}
+.unit-box{border:1px solid var(--line);border-radius:14px;padding:14px}
+ul.plain{list-style:none;margin:0;padding:0}
+.slots-list li{padding:4px 0;border-bottom:1px dashed var(--line)}
+code.copy{user-select:all;background:var(--bg);padding:2px 6px;border-radius:6px;word-break:break-all}
+.user-actions summary{list-style:none;cursor:pointer}
+.user-actions summary::-webkit-details-marker{display:none}
+@media (max-width:900px){.back.acct-layout{grid-template-columns:1fr}.back .side-nav{position:static;flex-direction:row;flex-wrap:wrap}}
+/* les espaces de gestion n'ont pas d'animations d'apparition (tout doit rester visible et immédiat) */
+.fx-on .back :is(.panel,.card,.grid > *,h2,.eyebrow){opacity:1!important;transform:none!important;clip-path:none!important;transition:none!important}
+body:has(.back) .fly-plane{display:none}
+.back-table .pill,.back-table td.small.muted{white-space:nowrap}
