@@ -411,8 +411,16 @@ export async function deleteCategory(f: FormData) {
   let err: string | null = null;
   try {
     await withDb(me.id, async (db) => {
-      if (await one(db, `select 1 from public.listings where category_id = $1`, [str(f, 'cat')])) throw new Error(`INVALID: ${t(lang, 'cat_inUse')}`);
       if (await one(db, `select 1 from public.categories where id = $1 and slug in ('hebergement','excursion')`, [str(f, 'cat')])) throw new Error('INVALID: catégorie principale');
+      // annonces de cette catégorie : déplacées d'abord vers la catégorie choisie (du même type)
+      if (await one(db, `select 1 from public.listings where category_id = $1`, [str(f, 'cat')])) {
+        const to = str(f, 'move_to');
+        const ok = UUID.test(to) && to !== str(f, 'cat') && await one(db, `select 1 from public.categories a join public.categories b on b.type = a.type
+          where a.id = $1 and b.id = $2`, [str(f, 'cat'), to]);
+        if (!ok) throw new Error(`INVALID: ${t(lang, 'cat_inUse')}`);
+        await db.query(`update public.listings set category_id = $2 where category_id = $1`, [str(f, 'cat'), to]);
+      }
+      await db.query(`update public.categories set parent_id = null where parent_id = $1`, [str(f, 'cat')]);
       await db.query(`delete from public.categories where id = $1`, [str(f, 'cat')]);
     });
   } catch (e) { err = dbMessage(e); }

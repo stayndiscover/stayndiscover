@@ -2,6 +2,9 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Catégories : enregistrer et supprimer sur chaque ligne
+- Chaque sous-catégorie a ses boutons « Enregistrer » et « Supprimer ». Si elle contient des annonces, on choisit vers quelle catégorie les déplacer, puis elle est supprimée. Les deux catégories principales (Hébergement, Excursion) restent non supprimables.
+
 ## 2026-11-11 — Un espace par rôle
 - L'administrateur n'a plus d'espace visiteur : connexion → Administration ; « Mon compte » et l'icône de compte mènent à l'administration ; plus de favoris ni de panier dans son en-tête ; son profil (nom, e-mail, mot de passe) est dans Administration → Mon profil. L'adresse /pro le renvoie vers Administration → Prestataires (il gère les prestataires, leurs fiches et leurs annonces depuis l'administration).
 - Le prestataire arrive directement dans son espace (inscription, connexion, « Mon compte ») ; son profil personnel est sur la page Profil professionnel.

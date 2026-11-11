@@ -35,9 +35,19 @@ export default async function AdminCats(props: PageProps) {
                   <td style={{ width: 90 }}><input form={fid} type="number" name="sort_order" defaultValue={c.sort_order} aria-label={t('dst_order')} /></td>
                   <td className="small num">{c.n}</td>
                   <td><div className="row" style={{ gap: 6 }}>
-                    <ActionForm id={fid} action={saveCategory} lang={lang} path={path} fields={{ cat: c.id }} anchor={`c-${type}`}><button className="btn ghost sm">{t('bo_save')}</button></ActionForm>
-                    {c.n === 0 && (c.parent_id !== null || type === 'lieu')
-                      ? <ActionForm action={deleteCategory} lang={lang} path={path} fields={{ cat: c.id }} anchor={`c-${type}`}><button className="btn ghost sm" aria-label={t('bo_delete')}>✕</button></ActionForm> : null}
+                    <ActionForm id={fid} action={saveCategory} lang={lang} path={path} fields={{ cat: c.id }} anchor={`c-${type}`}><button className="btn sm">{t('bo_save')}</button></ActionForm>
+                    {!c.parent_id && type !== 'lieu' ? null : (
+                      <ActionForm action={deleteCategory} lang={lang} path={path} fields={{ cat: c.id }} anchor={`c-${type}`} className="inline-form">
+                        {c.n > 0 && (
+                          <select name="move_to" required aria-label={t('cat_moveTo')} style={{ width: 200 }} defaultValue="">
+                            <option value="" disabled>{t('cat_moveTo')}</option>
+                            {cats.filter((o) => o.type === type && o.id !== c.id && (o.parent_id || type === 'lieu')).map((o) => (
+                              <option key={o.id} value={o.id}>{(o.name as Record<string, string>)[lang] ?? (o.name as Record<string, string>).fr}</option>))}
+                          </select>
+                        )}
+                        <button className="btn ghost sm">{t('bo_delete')}</button>
+                      </ActionForm>
+                    )}
                   </div></td>
                 </tr>);
             })}</tbody></table></div>

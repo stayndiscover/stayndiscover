@@ -192,8 +192,16 @@ ok((await notice(adm.p)).includes('Expérience'), 'catégories : « Expérience 
 await cat.locator('input[name=cname_fr]').fill('Cascade test');
 await act(adm.p, cat.getByRole('button', { name: 'Ajouter' }), /[?&]ok=saved/);
 ok(sql(`select count(*) from categories where name->>'fr' = 'Cascade test' and type = 'lieu'`) === '1', 'catégories : sous-catégorie ajoutée');
-await act(adm.p, adm.p.locator('tr', { has: adm.p.locator('input[value="Cascade test"]') }).getByRole('button', { name: 'Supprimer' }), /[?&]ok=deleted/);
-ok(sql(`select count(*) from categories where name->>'fr' = 'Cascade test'`) === '0', 'catégories : sous-catégorie inutilisée supprimée');
+const plage = sql(`select id from listings where slug = 'anse-noire' limit 1`) || sql(`select id from listings where type = 'lieu' limit 1`);
+const oldCat = sql(`select category_id from listings where id = '${plage}'`);
+sql(`update listings set category_id = (select id from categories where name->>'fr' = 'Cascade test') where id = '${plage}'`);
+await go(adm.p, '/fr/admin/categories');
+const crow = adm.p.locator('tr', { has: adm.p.locator('input[value="Cascade test"]') });
+ok(await crow.getByRole('button', { name: 'Enregistrer' }).count() === 1 && await crow.getByRole('button', { name: 'Supprimer' }).count() === 1, 'catégories : « Enregistrer » et « Supprimer » sur la ligne, même si elle contient des annonces');
+await crow.locator('select[name=move_to]').selectOption(oldCat);
+await act(adm.p, crow.getByRole('button', { name: 'Supprimer' }), /[?&]ok=deleted/);
+ok(sql(`select count(*) from categories where name->>'fr' = 'Cascade test'`) === '0' && sql(`select category_id from listings where id = '${plage}'`) === oldCat,
+  'catégories : suppression d\'une catégorie utilisée, ses annonces déplacées vers la catégorie choisie');
 
 await go(adm.p, '/fr/admin/destinations');
 const nd = adm.p.locator('form#nouvelle');
