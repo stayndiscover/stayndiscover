@@ -157,7 +157,8 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       const vx = -uy, vy = ux;
       const r = clamp(Math.min(W, H) * 0.085, 34, 86);
       const f0 = r * 1.5; // coin déjà légèrement soulevé avant le premier défilement
-      const f = f0 + ease(p) * (D + Math.PI * r * 1.25 - f0);
+      const fEnd = D + r * 1.1; // le pli a dépassé le coin haut-gauche : tout le drap est retiré
+      const f = f0 + ease(p) * (fEnd - f0);
       const persp = 1500, cxs = W / 2, cys = H / 2;
       const wob = 1 - p * 0.6;
 
@@ -271,7 +272,12 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       };
       ropeRef.current?.setAttribute('d', curve(k1));
       rope2Ref.current?.setAttribute('d', curve(k2));
-      if (hintRef.current) hintRef.current.style.opacity = `${clamp(1 - p * 7)}`;
+      // le logo reste affiché pendant tout le dévoilement ; seule la phrase s'efface au premier défilement.
+      // À la fin, logo, avion et câbles disparaissent ensemble en fondu.
+      const fade = clamp((fEnd - f) / (D * 0.16)); // tout s'efface pendant que les derniers centimètres de drap partent
+      if (hintRef.current) { hintRef.current.style.opacity = `${fade}`; hintRef.current.style.setProperty('--hint', `${clamp(1 - p * 7)}`); }
+      if (plane) plane.style.opacity = `${fade}`;
+      ropeRef.current?.parentElement?.setAttribute('opacity', `${fade}`);
 
       raf = requestAnimationFrame(frame);
     };
@@ -296,15 +302,6 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       </div>
       <div className="veil" ref={veilRef} aria-hidden="true">
         <canvas ref={canRef} />
-        <svg className="veil-ropes"><path ref={ropeRef} /><path ref={rope2Ref} /></svg>
-        <div className="veil-plane" ref={planeRef}>
-          <div className="veil-plane-in" ref={planeInRef}>
-            {/* l'avion du logo, vu du dessus (même modèle, mêmes couleurs) */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/avion-dessus.svg" alt="" width={400} height={440} />
-            <span className="veil-prop" />
-          </div>
-        </div>
         <div className="veil-hint" ref={hintRef}>
           {/* le logo se construit morceau par morceau à l'arrivée sur la page */}
           <div className="logo-build">
@@ -315,6 +312,15 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
           </div>
           <span>{labels.hint}</span>
           <i />
+        </div>
+        <svg className="veil-ropes"><path ref={ropeRef} /><path ref={rope2Ref} /></svg>
+        <div className="veil-plane" ref={planeRef}>
+          <div className="veil-plane-in" ref={planeInRef}>
+            {/* l'avion du logo, vu du dessus (même modèle, mêmes couleurs) */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/avion-dessus.svg" alt="" width={400} height={440} />
+            <span className="veil-prop" />
+          </div>
         </div>
       </div>
     </>

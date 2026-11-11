@@ -2,6 +2,11 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Ouverture : logo visible jusqu’au bout
+- Le logo reste affiché pendant tout le dévoilement (seule la phrase « Faites défiler… » s’efface au premier défilement).
+- Ordre des couches : drap < logo < câbles < avion — l’avion passe au-dessus du logo.
+- Quand le dernier morceau de drap part, le logo, l’avion et les câbles disparaissent ensemble en fondu. Le drap finit exactement à la fin de la piste de défilement.
+
 ## 2026-11-11 — Ouverture : le logo se construit morceau par morceau
 - Sur le voile, le logo est découpé en 37 morceaux (public/images/logo-pieces.png + lib/logo-pieces.ts, recomposition identique au logo d’origine) qui arrivent l’un après l’autre : le pin, la maison et ses 4 fenêtres, le palmier, les montagnes, les 3 vagues, la flèche qui se dessine, les tirets du trajet, l’avion qui arrive en volant, puis les 13 lettres. Ensuite « Faites défiler pour lever le voile ». Montage complet en 4,5 s environ. Avion et voile inchangés.
 - Note tests : la nuit bloquée de démonstration de la villa est fixée à la date d’installation (+20 à +24 jours) ; si le test « dates bloquées » échoue quelques jours plus tard, il suffit de recaler cette période.
