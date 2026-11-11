@@ -5,7 +5,7 @@ import { signOut } from '@/app/actions';
 type Area = 'admin' | 'pro';
 const NAV: Record<Area, [string, string][]> = {
   admin: [['', 'bo_dash'], ['annonces', 'bo_listings'], ['prestataires', 'bo_providers'], ['utilisateurs', 'bo_users'], ['destinations', 'bo_dests'],
-    ['categories', 'bo_cats'], ['ventes', 'bo_sales'], ['contenus', 'bo_content'], ['reglages', 'bo_settings']],
+    ['categories', 'bo_cats'], ['ventes', 'bo_sales'], ['contenus', 'bo_content'], ['reglages', 'bo_settings'], ['profil', 'myProfile']],
   pro: [['', 'bo_dash'], ['profil', 'bo_proProfile'], ['annonces', 'bo_myListings'], ['reservations', 'bo_bookings'], ['finances', 'bo_finance'], ['avis', 'bo_reviews']],
 };
 
@@ -21,7 +21,6 @@ export function BackShell({ lang, area, active, sp, children }: { lang: Lang; ar
           const href = `/${lang}/${area}${seg ? `/${seg}` : ''}`;
           return <Link key={seg} href={href} className={active === seg ? 'on' : ''} aria-current={active === seg ? 'page' : undefined}>{t(key)}</Link>;
         })}
-        <Link href={`/${lang}/compte`}>{t('account')}</Link>
         <form action={signOut}><input type="hidden" name="lang" value={lang} /><button className="side-logout">{t('logout')}</button></form>
       </nav>
       <div className="stack" style={{ gap: 22, minWidth: 0 }}>

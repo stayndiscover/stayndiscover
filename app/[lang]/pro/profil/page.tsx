@@ -1,5 +1,6 @@
 import { BackShell, statusPill } from '@/components/back/BackShell';
 import { ProviderForm } from '@/components/back/ProviderForm';
+import { ProfileForm } from '@/components/ProfileForm';
 import { requireProvider, myProvider } from '@/lib/back';
 import { pageArgs, backMeta, type PageProps } from '@/lib/back-page';
 import { withDb, rows } from '@/lib/db';
@@ -17,6 +18,8 @@ export default async function ProProfile(props: PageProps) {
       <div className="row between"><h1 style={{ fontSize: '2rem' }}>{t('bo_proProfile')}</h1>{p && <span className={`pill ${statusPill(p.status)}`}>{t(`pst_${p.status}`)}</span>}</div>
       {!p && <p className="notice">{t('pro_needProfile')}</p>}
       <ProviderForm lang={lang} path={path} p={p} dests={dests} admin={false} />
+      <ProfileForm lang={lang} me={me} l={{ myProfile: t('myProfile'), fullName: t('fullName'), email: t('email'), phone: t('phone'),
+        prefLang: t('prefLang'), newPass: t('newPass'), pwdHint: t('pwdHint'), save: t('save') }} />
     </BackShell>
   );
 }

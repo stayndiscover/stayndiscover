@@ -30,6 +30,7 @@ async function newUser(kind, name) {
   if (kind === 'pro') await p.locator('input[name=account_type][value=provider]').check();
   await p.getByRole('button', { name: 'Créer un compte' }).last().click();
   await p.waitForURL((u) => !u.pathname.endsWith('/connexion'));
+  await p.waitForLoadState('networkidle');
   return { p, email, ctx };
 }
 const go = (p, u) => p.goto(BASE + u, { waitUntil: 'networkidle' });
@@ -44,8 +45,10 @@ const notice = async (p) => (await p.locator('.notice.ok, .notice.bad').allInner
 
 // ---------- 1. Prestataire
 const pro = await newUser('pro', 'Kay Lagon');
+await pro.p.waitForURL('**/fr/pro');
+ok(new URL(pro.p.url()).pathname === '/fr/pro', 'inscription prestataire : arrivée directe dans l\'espace prestataire');
 await go(pro.p, '/fr/compte');
-ok(await pro.p.getByRole('link', { name: 'Espace prestataire →' }).count() === 1, 'compte prestataire : accès « Espace prestataire » depuis Mon compte');
+ok(new URL(pro.p.url()).pathname === '/fr/pro', 'prestataire : pas d\'espace visiteur, « Mon compte » mène à l\'espace prestataire');
 await go(pro.p, '/fr/admin');
 ok(await pro.p.locator('h1').innerText().then((t) => !t.includes('Administration')), 'prestataire : l\'administration lui est fermée');
 await go(pro.p, '/fr/pro');
@@ -57,7 +60,7 @@ await pro.p.selectOption('select[name=destination_id]', { label: 'Martinique' })
 await pro.p.fill('textarea[name=pdesc_fr]', 'Sorties en catamaran au départ du Marin.');
 await pro.p.fill('textarea[name=bank]', 'FR76 0000 0000 0000 0000 0000 000');
 await pro.p.setInputFiles('input[name=logo]', '/tmp/sd-photo.png');
-await pro.p.getByRole('button', { name: 'Enregistrer' }).click();
+await pro.p.locator('form', { has: pro.p.locator('input[name=trade_name]') }).getByRole('button', { name: 'Enregistrer' }).click();
 await pro.p.waitForURL(/\/pro\/profil\?ok=saved/);
 ok(await pro.p.locator('.pill', { hasText: 'À valider' }).count() === 1, 'profil professionnel créé, en attente de validation');
 ok(sql(`select logo_path is not null from providers where trade_name = '${TRADE}'`) === 't', 'profil professionnel : logo envoyé');
@@ -109,6 +112,14 @@ ok((await pro.p.title()).includes('introuvable') || (await pro.p.locator('h1').i
 // ---------- 2. Administrateur
 const adm = await newUser('admin', 'Admin Test');
 sql(`update profiles set role = 'admin' where id = (select id from auth.users where email = '${adm.email}')`);
+await go(adm.p, '/fr/compte');
+ok(new URL(adm.p.url()).pathname === '/fr/admin', 'administrateur : pas d\'espace visiteur, « Mon compte » mène à l\'administration');
+ok(await adm.p.locator('header, .side-nav').getByRole('link', { name: 'Espace prestataire' }).count() === 0, 'administrateur : pas de lien « Espace prestataire », tout se gère dans l\'administration');
+await go(adm.p, '/fr/pro');
+ok(new URL(adm.p.url()).pathname === '/fr/admin/prestataires', 'administrateur : l\'espace prestataire renvoie vers la gestion des prestataires');
+ok(await adm.p.locator('header a[href="/fr/admin"]').count() === 1 && await adm.p.locator('header a[href="/fr/panier"]').count() === 0, 'en-tête admin : bouton « Administration », sans favoris ni panier');
+await go(adm.p, '/fr/admin/profil');
+ok(await adm.p.locator('input[name=full_name]').count() === 1, 'administrateur : son profil (nom, e-mail, mot de passe) dans l\'administration');
 await go(adm.p, '/fr/admin');
 ok(await adm.p.locator('h1', { hasText: 'Administration' }).count() === 1, 'administrateur : tableau de bord');
 ok(await adm.p.locator('.kpi').count() >= 12, 'tableau de bord : clients, prestataires, annonces, réservations, CA, commissions…');

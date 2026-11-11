@@ -27,10 +27,14 @@ async function needMe(f: FormData) {
 export async function signIn(_: FormState, f: FormData): Promise<FormState> {
   const lang = langOf(f);
   const sb = await supabaseServer();
-  const { error } = await sb.auth.signInWithPassword({ email: str(f, 'email'), password: String(f.get('password') ?? '') });
+  const { data, error } = await sb.auth.signInWithPassword({ email: str(f, 'email'), password: String(f.get('password') ?? '') });
   if (error) return { error: t(lang, error.code === 'invalid_credentials' ? 'errLogin' : 'errGeneric'), values: { email: str(f, 'email') } };
   revalidatePath('/', 'layout');
-  redirect(safePath(str(f, 'next'), lang) === `/${lang}` ? `/${lang}/compte` : safePath(str(f, 'next'), lang));
+  const next = safePath(str(f, 'next'), lang);
+  if (next !== `/${lang}`) redirect(next);
+  // sans page demandée : chacun arrive dans SON espace (administration, prestataire ou voyageur)
+  const role = data.user ? (await withDb(data.user.id, (db) => one<{ role: string }>(db, 'select role::text as role from public.profiles where id = $1', [data.user!.id])))?.role : null;
+  redirect(role === 'admin' ? `/${lang}/admin` : role === 'provider' ? `/${lang}/pro` : `/${lang}/compte`);
 }
 
 export async function signUp(_: FormState, f: FormData): Promise<FormState> {
@@ -44,13 +48,14 @@ export async function signUp(_: FormState, f: FormData): Promise<FormState> {
     email: str(f, 'email'), password,
     options: {
       data: { full_name: str(f, 'full_name'), lang, account_type: str(f, 'account_type') === 'provider' ? 'provider' : 'client' },
-      emailRedirectTo: `${siteUrl()}/auth/confirm?next=${encodeURIComponent(next === `/${lang}` ? `/${lang}/compte` : next)}`,
+      emailRedirectTo: `${siteUrl()}/auth/confirm?next=${encodeURIComponent(next === `/${lang}` ? (values.account_type === 'provider' ? `/${lang}/pro` : `/${lang}/compte`) : next)}`,
     },
   });
   if (error) return { error: t(lang, error.code === 'user_already_exists' ? 'errExists' : error.code === 'weak_password' ? 'errPwd' : 'errGeneric'), values };
   if (!data.session) return { ok: t(lang, 'checkEmail') }; // confirmation par e-mail activée dans Supabase
   revalidatePath('/', 'layout');
-  redirect(next === `/${lang}` ? `/${lang}/compte` : next);
+  const home = values.account_type === 'provider' ? `/${lang}/pro` : `/${lang}/compte`;
+  redirect(next === `/${lang}` ? home : next);
 }
 
 export async function resetPassword(_: FormState, f: FormData): Promise<FormState> {

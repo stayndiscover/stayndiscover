@@ -1,5 +1,5 @@
 import 'server-only';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { requireMe, type Me } from './auth';
 import { withDb, rows, one } from './db';
 import type { I18n, Lang } from './i18n';
@@ -10,10 +10,11 @@ export async function requireAdmin(lang: Lang, path: string) {
   if (me.role !== 'admin') notFound();
   return me;
 }
-/** Espace prestataire : réservé aux comptes prestataires (et aux administrateurs, pour assister). */
+/** Espace prestataire : réservé aux comptes prestataires (l'administrateur gère les prestataires depuis l'administration). */
 export async function requireProvider(lang: Lang, path: string) {
   const me = await requireMe(lang, path);
-  if (me.role !== 'provider' && me.role !== 'admin') notFound();
+  if (me.role === 'admin') redirect(`/${lang}/admin/prestataires`);
+  if (me.role !== 'provider') notFound();
   return me;
 }
 

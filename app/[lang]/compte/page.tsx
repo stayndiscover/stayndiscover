@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { AccountNav } from '@/components/AccountNav';
 import { ProfileForm } from '@/components/ProfileForm';
 import { requireMe } from '@/lib/auth';
@@ -21,6 +21,9 @@ export default async function Compte({ params }: { params: Promise<{ lang: strin
   const lang: Lang = isLang(l) ? l : 'fr';
   const t = translator(lang);
   const me = await requireMe(lang, `/${lang}/compte`);
+  // chaque rôle a son propre espace : l'administration pour l'admin, l'espace pro pour le prestataire
+  if (me.role === 'admin') redirect(`/${lang}/admin`);
+  if (me.role === 'provider') redirect(`/${lang}/pro`);
   const [bookings, orders] = await withDb(me.id, async (db) => [
     await rows<{ id: string; title: I18n; type: string; status: string; amount: string; first: string | null; last: string | null; slot: string | null; number: string }>(db,
       `select b.id, l.title, b.type, b.status, b.amount, o.number, to_char(lower(b.stay), 'YYYY-MM-DD') as first, to_char(upper(b.stay), 'YYYY-MM-DD') as last,
@@ -40,12 +43,6 @@ export default async function Compte({ params }: { params: Promise<{ lang: strin
           <span className="eyebrow">{t(`role_${me.role}`)}</span>
           <h1 style={{ fontSize: '2rem' }}>{t('hello')} {me.full_name?.split(' ')[0] ?? ''}</h1>
         </div>
-        {(me.role === 'provider' || me.role === 'admin') && (
-          <div className="row" style={{ gap: 10 }}>
-            {me.role === 'admin' && <Link className="btn" href={`/${lang}/admin`}>{t('bo_admin')} →</Link>}
-            <Link className={`btn ${me.role === 'admin' ? 'ghost' : ''}`} href={`/${lang}/pro`}>{t('bo_pro')} →</Link>
-          </div>
-        )}
         <ProfileForm lang={lang} me={me} l={{ myProfile: t('myProfile'), fullName: t('fullName'), email: t('email'), phone: t('phone'),
           prefLang: t('prefLang'), newPass: t('newPass'), pwdHint: t('pwdHint'), save: t('save') }} />
         <div className="panel stack">

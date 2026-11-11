@@ -28,14 +28,17 @@ export function Header({ lang, me, favCount, cartCount }: { lang: Lang; me: Me |
         <MainNav items={nav} menuLabel={t('menu')} />
         <div className="hdr-tools">
           <LangSelect lang={lang} label={t('lang')} />
+          {me?.role !== 'admin' && (<>
           <Link className="iconbtn" href={`${p}/favoris`} aria-label={t('navFav')} title={t('navFav')}>
             <HeartIcon />{favCount > 0 && <span className="badge">{favCount}</span>}
           </Link>
           <Link className="iconbtn" href={`${p}/panier`} aria-label={t('navCart')} title={t('navCart')}>
             <CartIcon />{cartCount > 0 && <span className="badge">{cartCount}</span>}
           </Link>
+          </>)}
           {me ? (
-            <Link className="btn sm acct ghost" href={`${p}/compte`} aria-label={t('account')} title={t('account')}>
+            <Link className="btn sm acct ghost" href={`${p}/${me.role === 'admin' ? 'admin' : me.role === 'provider' ? 'pro' : 'compte'}`}
+              aria-label={t(me.role === 'admin' ? 'bo_admin' : me.role === 'provider' ? 'bo_pro' : 'account')} title={t(me.role === 'admin' ? 'bo_admin' : me.role === 'provider' ? 'bo_pro' : 'account')}>
               <span className="acct-t">{(me.full_name || me.email).split(' ')[0]}</span><UserIcon />
             </Link>
           ) : (
