@@ -44,6 +44,13 @@ void main(){
   float flat0 = 1.0 - smoothstep(0.5, 3.0, vZ);
   float sh = flat0 * smoothstep(uF - uR * 0.2, uF + uR * 0.4, vSh) * (0.05 + 0.13 * exp(-(vSh - uF) / (uR * 2.2))) * (1.0 - smoothstep(uEnd - uR * 2.0, uEnd, vSh));
   col *= 1.0 - sh;
+  // partie encore posée : le blanc (et le logo imprimé dessus) est en dessous, dans la page ;
+  // ici on ne dessine que les ombres et le relief du tissu, en transparence
+  if (vSh >= uF && vZ < 3.0) {
+    float lum = clamp(dot(col, vec3(0.333)) / 0.987, 0.0, 1.0);
+    gl_FragColor = vec4(0.04, 0.12, 0.11, clamp(1.0 - lum, 0.0, 0.45));
+    return;
+  }
   gl_FragColor = vec4(col, 1.0);
 }`;
 // ombre portée du drap sur la page déjà dévoilée
@@ -72,6 +79,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
   const ropeRef = useRef<SVGPathElement>(null);
   const rope2Ref = useRef<SVGPathElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
+  const flatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -185,6 +193,13 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         out[o] = cxs + (X - cxs) * s; out[o + 1] = cys + (Y - cys) * s; out[o + 2] = z;
       };
 
+      // partie du drap encore posée = au-delà du pli (a ≥ f) : le fond blanc et le logo y sont découpés,
+      // si bien que le logo glisse sous le rabat et disparaît au fur et à mesure
+      if (flatRef.current) {
+        const ex = Cx + f * ux, ey = Cy + f * uy, L = 4 * (W + H);
+        const pt = (x: number, y: number) => `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+        flatRef.current.style.clipPath = `polygon(${pt(ex + vx * L, ey + vy * L)},${pt(ex - vx * L, ey - vy * L)},${pt(ex - vx * L + ux * L, ey - vy * L + uy * L)},${pt(ex + vx * L + ux * L, ey + vy * L + uy * L)})`;
+      }
       if (prog && gl) {
         // maillage
         for (let j = 0; j <= rows; j++) for (let i = 0; i <= cols; i++) {
@@ -219,7 +234,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
           gl.drawArrays(gl.TRIANGLES, 0, 3); gl.disableVertexAttribArray(la);
         }
         // 2. le drap
-        gl.disable(gl.BLEND); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+        gl.enable(gl.BLEND); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
         gl.useProgram(prog);
         gl.uniform2f(gl.getUniformLocation(prog, 'uRes'), W, H); gl.uniform1f(gl.getUniformLocation(prog, 'uDpr'), dpr);
         gl.uniform1f(gl.getUniformLocation(prog, 'uF'), f); gl.uniform1f(gl.getUniformLocation(prog, 'uR'), r);
@@ -233,14 +248,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bIdx);
         gl.drawElements(gl.TRIANGLES, nIdx, gl.UNSIGNED_SHORT, 0);
       } else if (ctx2) {
-        // secours : drap plat dont la partie encore posée se réduit
-        ctx2.setTransform(dpr, 0, 0, dpr, 0, 0); ctx2.clearRect(0, 0, W, H);
-        ctx2.fillStyle = '#fbfaf6';
-        const ex = Cx + f * ux, ey = Cy + f * uy, L = 4 * D;
-        ctx2.beginPath();
-        ctx2.moveTo(ex + vx * L, ey + vy * L); ctx2.lineTo(ex - vx * L, ey - vy * L);
-        ctx2.lineTo(ex - vx * L + ux * L, ey - vy * L + uy * L); ctx2.lineTo(ex + vx * L + ux * L, ey + vy * L + uy * L);
-        ctx2.closePath(); ctx2.fill();
+        ctx2.clearRect(0, 0, cv.width, cv.height); // secours sans WebGL : seul le fond blanc découpé reste
       }
 
       // ——— l'avion : il tire le coin du drap (point a = 0, b = 0) au bout de deux câbles
@@ -276,6 +284,16 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       // À la fin, logo, avion et câbles disparaissent ensemble en fondu.
       const fade = clamp((fEnd - f) / (D * 0.16)); // tout s'efface pendant que les derniers centimètres de drap partent
       if (hintRef.current) { hintRef.current.style.opacity = `${fade}`; hintRef.current.style.setProperty('--hint', `${clamp(1 - p * 7)}`); }
+      // le logo est « posé sur le drap » : il disparaît là où le coin soulevé l'a recouvert ou découvert
+      // (on ne garde que la partie au-delà de la pointe du rabat, côté haut-gauche)
+      if (hintRef.current) {
+        const tipA = (corner[0] - Cx) * ux + (corner[1] - Cy) * uy;
+        const cut = Math.max(f, tipA);
+        const box = hintRef.current.getBoundingClientRect();
+        const L = 4000, ox = Cx + ux * cut - box.left, oy = Cy + uy * cut - box.top;
+        const pt = (x: number, y: number) => `${x.toFixed(1)}px ${y.toFixed(1)}px`;
+        hintRef.current.style.clipPath = `polygon(${pt(ox + vx * L, oy + vy * L)},${pt(ox - vx * L, oy - vy * L)},${pt(ox - vx * L + ux * L, oy - vy * L + uy * L)},${pt(ox + vx * L + ux * L, oy + vy * L + uy * L)})`;
+      }
       if (plane) plane.style.opacity = `${fade}`;
       ropeRef.current?.parentElement?.setAttribute('opacity', `${fade}`);
 
@@ -301,18 +319,20 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         <div className="veil-runway" ref={runRef} aria-hidden="true" />
       </div>
       <div className="veil" ref={veilRef} aria-hidden="true">
-        <canvas ref={canRef} />
-        <div className="veil-hint" ref={hintRef}>
-          {/* le logo se construit morceau par morceau à l'arrivée sur la page */}
-          <div className="logo-build">
-            {LOGO_PIECES.map(([anim, l, tp, w, h, bw, bh, bx, by, delay], i) => (
-              <span key={i} className={`lp lp-${anim}`} style={{ left: `${l}%`, top: `${tp}%`, width: `${w}%`, height: `${h}%`,
-                backgroundSize: `${bw}% ${bh}%`, backgroundPosition: `${bx}% ${by}%`, animationDelay: `${delay}ms` }} />
-            ))}
+        <div className="veil-flat" ref={flatRef}>
+          <div className="veil-hint" ref={hintRef}>
+            {/* le logo se construit morceau par morceau à l'arrivée sur la page */}
+            <div className="logo-build">
+              {LOGO_PIECES.map(([anim, l, tp, w, h, bw, bh, bx, by, delay], i) => (
+                <span key={i} className={`lp lp-${anim}`} style={{ left: `${l}%`, top: `${tp}%`, width: `${w}%`, height: `${h}%`,
+                  backgroundSize: `${bw}% ${bh}%`, backgroundPosition: `${bx}% ${by}%`, animationDelay: `${delay}ms` }} />
+              ))}
+            </div>
+            <span>{labels.hint}</span>
+            <i />
           </div>
-          <span>{labels.hint}</span>
-          <i />
         </div>
+        <canvas ref={canRef} />
         <svg className="veil-ropes"><path ref={ropeRef} /><path ref={rope2Ref} /></svg>
         <div className="veil-plane" ref={planeRef}>
           <div className="veil-plane-in" ref={planeInRef}>

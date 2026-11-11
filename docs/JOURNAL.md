@@ -2,6 +2,9 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Ouverture : le logo passe sous le voile
+- Le logo est désormais « imprimé » sur la partie du drap encore posée : le fond blanc et le logo (calque .veil-flat) sont découpés au niveau du pli, et le rabat soulevé, dessiné par-dessus, le recouvre. Quand le coin du voile passe sur le logo, celui-ci disparaît au fur et à mesure sous le tissu. Les ombres et le relief du tissu posé sont dessinés en transparence par-dessus (le logo en reçoit aussi).
+
 ## 2026-11-11 — Ouverture : logo visible jusqu’au bout
 - Le logo reste affiché pendant tout le dévoilement (seule la phrase « Faites défiler… » s’efface au premier défilement).
 - Ordre des couches : drap < logo < câbles < avion — l’avion passe au-dessus du logo.
