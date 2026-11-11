@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { LOGO_PIECES } from '@/lib/logo-pieces';
 
 /**
  * Ouverture de la page d'accueil : un grand drap blanc couvre l'écran, l'avion du logo (rendu en relief)
@@ -305,8 +306,13 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
           </div>
         </div>
         <div className="veil-hint" ref={hintRef}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo.png" alt="" width={457} height={360} />
+          {/* le logo se construit morceau par morceau à l'arrivée sur la page */}
+          <div className="logo-build">
+            {LOGO_PIECES.map(([anim, l, tp, w, h, bw, bh, bx, by, delay], i) => (
+              <span key={i} className={`lp lp-${anim}`} style={{ left: `${l}%`, top: `${tp}%`, width: `${w}%`, height: `${h}%`,
+                backgroundSize: `${bw}% ${bh}%`, backgroundPosition: `${bx}% ${by}%`, animationDelay: `${delay}ms` }} />
+            ))}
+          </div>
           <span>{labels.hint}</span>
           <i />
         </div>

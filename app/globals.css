@@ -491,8 +491,30 @@ dialog.paywall{max-width:540px;max-height:calc(100dvh - 24px);overflow:auto}
 @keyframes veil-prop{0%{transform:scaleY(1)}50%{transform:scaleY(.35)}100%{transform:scaleY(1)}}
 .veil-hint{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px;
   color:var(--accent);font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:.02em;text-align:center;transition:opacity .2s}
-.veil-hint img{width:min(240px,48vw);height:auto}
 .veil-hint i{width:22px;height:34px;border:2px solid currentColor;border-radius:12px;position:relative;opacity:.8}
 .veil-hint i::after{content:"";position:absolute;left:50%;top:6px;width:4px;height:7px;margin-left:-2px;border-radius:2px;background:currentColor;animation:veil-wheel 1.6s ease-in-out infinite}
 @keyframes veil-wheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(10px);opacity:0}100%{opacity:0}}
 html[data-veil=on] .fly-plane{opacity:0!important}
+
+/* Logo du voile : chaque morceau arrive l'un après l'autre (montage complet en ~4,5 s) */
+.logo-build{position:relative;width:min(240px,48vw);aspect-ratio:457/360}
+.logo-build .lp{position:absolute;background-image:url(/images/logo-pieces.png);background-repeat:no-repeat;animation-duration:.7s;animation-timing-function:cubic-bezier(.2,.8,.2,1);animation-fill-mode:both}
+.logo-build .lp-pop{animation-name:lp-pop}
+.logo-build .lp-drop{animation-name:lp-drop;animation-duration:.8s}
+.logo-build .lp-grow{animation-name:lp-grow;transform-origin:50% 100%}
+.logo-build .lp-rise{animation-name:lp-rise}
+.logo-build .lp-slide{animation-name:lp-slide;animation-duration:.8s}
+.logo-build .lp-draw{animation-name:lp-draw;animation-duration:.9s;animation-timing-function:cubic-bezier(.5,0,.2,1)}
+.logo-build .lp-dot{animation-name:lp-pop;animation-duration:.35s}
+.logo-build .lp-fly{animation-name:lp-fly;animation-duration:1.1s;animation-timing-function:cubic-bezier(.15,.7,.25,1)}
+.logo-build .lp-letter{animation-name:lp-letter;animation-duration:.55s}
+@keyframes lp-pop{0%{opacity:0;transform:scale(.2) rotate(-25deg)}70%{opacity:1;transform:scale(1.12)}100%{opacity:1;transform:none}}
+@keyframes lp-drop{0%{opacity:0;transform:translateY(-70%)}60%{opacity:1;transform:translateY(6%)}80%{transform:translateY(-2%)}100%{opacity:1;transform:none}}
+@keyframes lp-grow{0%{opacity:0;transform:scaleY(0)}60%{opacity:1;transform:scaleY(1.08)}100%{opacity:1;transform:none}}
+@keyframes lp-rise{0%{opacity:0;transform:translateY(35%)}100%{opacity:1;transform:none}}
+@keyframes lp-slide{0%{opacity:0;transform:translateX(-35%)}100%{opacity:1;transform:none}}
+@keyframes lp-draw{0%{opacity:1;clip-path:inset(0 100% 0 0)}100%{opacity:1;clip-path:inset(0 0 0 0)}}
+@keyframes lp-fly{0%{opacity:0;transform:translate(160%,60%) rotate(-12deg) scale(.6)}70%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes lp-letter{0%{opacity:0;transform:translateY(45%)}70%{opacity:1;transform:translateY(-6%)}100%{opacity:1;transform:none}}
+/* la phrase et l'icône de défilement arrivent une fois le logo monté */
+.veil-hint > span,.veil-hint > i{animation:lp-rise .7s ease 4.3s both}

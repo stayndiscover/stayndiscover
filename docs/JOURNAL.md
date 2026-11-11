@@ -2,6 +2,10 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Ouverture : le logo se construit morceau par morceau
+- Sur le voile, le logo est découpé en 37 morceaux (public/images/logo-pieces.png + lib/logo-pieces.ts, recomposition identique au logo d’origine) qui arrivent l’un après l’autre : le pin, la maison et ses 4 fenêtres, le palmier, les montagnes, les 3 vagues, la flèche qui se dessine, les tirets du trajet, l’avion qui arrive en volant, puis les 13 lettres. Ensuite « Faites défiler pour lever le voile ». Montage complet en 4,5 s environ. Avion et voile inchangés.
+- Note tests : la nuit bloquée de démonstration de la villa est fixée à la date d’installation (+20 à +24 jours) ; si le test « dates bloquées » échoue quelques jours plus tard, il suffit de recaler cette période.
+
 ## 2026-11-10 — Ouverture : avion vu du dessus
 - L’avion qui tracte le voile est maintenant vu du dessus : public/images/avion-dessus.svg (même modèle à aile haute que le logo, turquoise du logo, relief par dégradés, pare-brise, feux de bout d’aile, hélice qui tourne). Son ombre reste toujours en bas à droite, comme sous une lumière venant du haut à gauche. Remplace avion-3d.png.
 - Le petit avion du logo qui descend avec le défilement reste celui du logo (vu de profil).
