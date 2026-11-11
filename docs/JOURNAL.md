@@ -2,6 +2,10 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Ouverture : logo imprimé sur le drap (correction de la coupe en biais)
+- Cause de la « bande en biais » : une découpe en ligne droite (clip-path) au niveau de la pointe du rabat, ajoutée par erreur le 11/11 et restée active malgré les corrections suivantes. Supprimée, ainsi que la découpe evenodd.
+- Désormais, une fois le logo monté et dès qu’on fait défiler, le logo est dessiné DANS le drap (texture WebGL de logo.png, exactement à la même place que le logo animé). Il est donc réellement recouvert par le coin du voile qui se replie ; le dos du rabat n’a pas de logo.
+
 ## 2026-11-11 — Ouverture : correction iPhone (découpe du logo décalée)
 - Sur iPhone, la hauteur du calque fixe du voile peut différer de window.innerHeight (barre d’adresse repliée) : le drap était alors étiré alors que la découpe du logo ne l’était pas, d’où une coupe en biais à côté du coin du voile. Le drap, l’avion et la découpe utilisent maintenant la taille réelle du calque (clientWidth/clientHeight, suivie par ResizeObserver).
 

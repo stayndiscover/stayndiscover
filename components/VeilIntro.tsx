@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import { LOGO_PIECES } from '@/lib/logo-pieces';
+import { LOGO_PIECES, LOGO_ASSEMBLED_MS } from '@/lib/logo-pieces';
 
 /**
  * Ouverture de la page d'accueil : un grand drap blanc couvre l'écran, l'avion du logo (rendu en relief)
@@ -16,17 +16,18 @@ import { LOGO_PIECES } from '@/lib/logo-pieces';
  */
 
 const VS = `
-attribute vec3 aPos; attribute vec3 aN; attribute float aSh;
+attribute vec3 aPos; attribute vec3 aN; attribute float aSh; attribute vec2 aUV;
 uniform vec2 uRes;
-varying vec3 vN; varying float vSh; varying float vZ;
+varying vec3 vN; varying float vSh; varying float vZ; varying vec2 vUV;
 void main(){
-  vN = aN; vSh = aSh; vZ = aPos.z;
+  vN = aN; vSh = aSh; vZ = aPos.z; vUV = aUV;
   gl_Position = vec4(aPos.x / uRes.x * 2.0 - 1.0, 1.0 - aPos.y / uRes.y * 2.0, -aPos.z / 2000.0, 1.0);
 }`;
 const FS = `
 precision mediump float;
-varying vec3 vN; varying float vSh; varying float vZ;
+varying vec3 vN; varying float vSh; varying float vZ; varying vec2 vUV;
 uniform float uDpr; uniform float uF; uniform float uR; uniform float uEnd;
+uniform sampler2D uLogo; uniform float uLogoA;
 void main(){
   vec3 n = normalize(vN);
   bool back = n.z < 0.0;
@@ -39,7 +40,14 @@ void main(){
   // trame très fine du tissu
   vec2 fc = gl_FragCoord.xy / uDpr;
   float weave = 0.988 + 0.012 * sin(fc.x * 2.2) * sin(fc.y * 2.2);
-  vec3 col = base * clamp(0.62 + 0.38 * diff / 0.72, 0.0, 1.06) * weave + spec;
+  float light = clamp(0.62 + 0.38 * diff / 0.72, 0.0, 1.06);
+  vec3 col = base * light * weave + spec;
+  // le logo est imprimé sur l'endroit du drap : il suit le tissu et passe sous le rabat (l'envers n'a pas de logo)
+  // (avec l'orientation du maillage, la face posée du drap est celle notée « back » ; le rabat retourné montre l'autre)
+  if (back && uLogoA > 0.0 && vUV.x >= 0.0 && vUV.x <= 1.0 && vUV.y >= 0.0 && vUV.y <= 1.0) {
+    vec4 lg = texture2D(uLogo, vUV);
+    col = mix(col, lg.rgb * light, lg.a * uLogoA);
+  }
   // ombre du rabat sur la partie encore posée (vZ ≈ 0) : douce, juste devant le pli
   float flat0 = 1.0 - smoothstep(0.5, 3.0, vZ);
   float sh = flat0 * smoothstep(uF - uR * 0.2, uF + uR * 0.4, vSh) * (0.05 + 0.13 * exp(-(vSh - uF) / (uR * 2.2))) * (1.0 - smoothstep(uEnd - uR * 2.0, uEnd, vSh));
@@ -72,8 +80,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
   const ropeRef = useRef<SVGPathElement>(null);
   const rope2Ref = useRef<SVGPathElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
-  const flatRef = useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     const root = document.documentElement;
     const veil = veilRef.current, cv = canRef.current, run = runRef.current;
@@ -98,8 +105,8 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
     const ctx2 = !prog ? cv.getContext('2d') : null; // secours sans WebGL : drap plat qui se retire
 
     let W = 0, H = 0, dpr = 1, cols = 0, rows = 0;
-    let pos = new Float32Array(0), nor = new Float32Array(0), sh = new Float32Array(0);
-    let bPos: WebGLBuffer | null = null, bN: WebGLBuffer | null = null, bSh: WebGLBuffer | null = null, bIdx: WebGLBuffer | null = null, bQuad: WebGLBuffer | null = null;
+    let pos = new Float32Array(0), nor = new Float32Array(0), sh = new Float32Array(0), uv = new Float32Array(0);
+    let bUV: WebGLBuffer | null = null, bPos: WebGLBuffer | null = null, bN: WebGLBuffer | null = null, bSh: WebGLBuffer | null = null, bIdx: WebGLBuffer | null = null, bQuad: WebGLBuffer | null = null;
     let nIdx = 0;
     const PAD = 24;
     const LIFT_K = 0.72; // vitesse du rabat par rapport au pli (1 = retombe à plat)
@@ -115,7 +122,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       cols = W > 800 ? 72 : 44;
       rows = Math.max(20, Math.round(cols * (H / W)));
       const n = (cols + 1) * (rows + 1);
-      pos = new Float32Array(n * 3); nor = new Float32Array(n * 3); sh = new Float32Array(n);
+      pos = new Float32Array(n * 3); nor = new Float32Array(n * 3); sh = new Float32Array(n); uv = new Float32Array(n * 2);
       if (gl && prog) {
         const idx = new Uint16Array(cols * rows * 6);
         let k = 0;
@@ -128,10 +135,37 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         bPos = bPos ?? gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bPos); gl.bufferData(gl.ARRAY_BUFFER, pos.byteLength, gl.DYNAMIC_DRAW);
         bN = bN ?? gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bN); gl.bufferData(gl.ARRAY_BUFFER, nor.byteLength, gl.DYNAMIC_DRAW);
         bSh = bSh ?? gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bSh); gl.bufferData(gl.ARRAY_BUFFER, sh.byteLength, gl.DYNAMIC_DRAW);
+        bUV = bUV ?? gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bUV); gl.bufferData(gl.ARRAY_BUFFER, uv.byteLength, gl.DYNAMIC_DRAW);
         bQuad = bQuad ?? gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, bQuad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
       }
     };
     resize();
+
+    // Logo imprimé sur le drap : texture = /images/logo.png, placée exactement à l'endroit du logo affiché
+    let tex: WebGLTexture | null = null, texOk = false, uvOk = false;
+    if (gl && prog) {
+      const im = new window.Image();
+      im.onload = () => {
+        tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, im);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        texOk = true; kick();
+      };
+      im.src = '/images/logo.png';
+    }
+    const logoEl = veil.querySelector<HTMLElement>('.logo-build');
+    const setUV = () => {
+      if (!logoEl) return;
+      const lr = logoEl.getBoundingClientRect(), vr = veil.getBoundingClientRect();
+      if (!lr.width) return;
+      const lx = lr.left - vr.left, ly = lr.top - vr.top;
+      for (let j = 0; j <= rows; j++) for (let i = 0; i <= cols; i++) {
+        const x = -PAD + (i / cols) * (W + 2 * PAD), y = -PAD + (j / rows) * (H + 2 * PAD), o = (j * (cols + 1) + i) * 2;
+        uv[o] = (x - lx) / lr.width; uv[o + 1] = (y - ly) / lr.height;
+      }
+      uvOk = true;
+    };
 
     const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x); // départ et arrivée en douceur
     const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -188,37 +222,9 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         out[o] = cxs + (X - cxs) * s; out[o + 1] = cys + (Y - cys) * s; out[o + 2] = z;
       };
 
-      // Le logo est « posé » sur le drap : il reste visible au-delà du pli (a ≥ f), sauf là où le coin soulevé
-      // du voile passe par-dessus. On découpe donc : demi-plan posé MOINS le contour du rabat (règle evenodd).
-      if (flatRef.current) {
-        const aS = (x: number, y: number) => (x - Cx) * ux + (y - Cy) * uy;
-        // 1. contour de la partie soulevée, dans le repère du drap (a, b) : rectangle ∩ {a < f}
-        const rect: [number, number][] = [[-PAD, -PAD], [W + PAD, -PAD], [W + PAD, H + PAD], [-PAD, H + PAD]]
-          .map(([x, y]) => [(x - Cx) * ux + (y - Cy) * uy, (x - Cx) * vx + (y - Cy) * vy]);
-        const cut = (poly: [number, number][], keep: (q: [number, number]) => number) => {
-          const out: [number, number][] = [];
-          for (let i = 0; i < poly.length; i++) {
-            const A = poly[i], B = poly[(i + 1) % poly.length], ka = keep(A), kb = keep(B);
-            if (ka >= 0) out.push(A);
-            if ((ka >= 0) !== (kb >= 0)) { const t2 = ka / (ka - kb); out.push([A[0] + (B[0] - A[0]) * t2, A[1] + (B[1] - A[1]) * t2]); }
-          }
-          return out;
-        };
-        const peeled = cut(rect, (q) => f - q[0]);
-        // 2. ce contour, une fois enroulé et soulevé, projeté à l'écran (bords échantillonnés car le tissu se courbe)
-        const tmp = new Float32Array(3); let flap: [number, number][] = [];
-        for (let i = 0; i < peeled.length; i++) {
-          const A = peeled[i], B = peeled[(i + 1) % peeled.length];
-          for (let k = 0; k < 24; k++) { const t2 = k / 24; place(A[0] + (B[0] - A[0]) * t2, A[1] + (B[1] - A[1]) * t2, tmp, 0); flap.push([tmp[0], tmp[1]]); }
-        }
-        // 3. on ne garde du rabat que ce qui recouvre la partie posée
-        flap = flap.length > 2 ? cut(flap, (q) => aS(q[0], q[1]) - f) : [];
-        const ex = Cx + f * ux, ey = Cy + f * uy, L = 4 * (W + H);
-        const P = (x: number, y: number) => `${x.toFixed(1)} ${y.toFixed(1)}`;
-        let d = `M${P(ex + vx * L, ey + vy * L)}L${P(ex - vx * L, ey - vy * L)}L${P(ex - vx * L + ux * L, ey - vy * L + uy * L)}L${P(ex + vx * L + ux * L, ey + vy * L + uy * L)}Z`;
-        if (flap.length > 2) d += 'M' + flap.map(([x, y]) => P(x, y)).join('L') + 'Z';
-        flatRef.current.style.clipPath = `path(evenodd, "${d}")`;
-      }
+      const onCloth = texOk && p > 0.002 && now - t0 > LOGO_ASSEMBLED_MS + 300;
+      if (onCloth && !uvOk) setUV();
+      if (logoEl) logoEl.style.visibility = onCloth && uvOk ? 'hidden' : '';
       if (prog && gl) {
         // maillage
         for (let j = 0; j <= rows; j++) for (let i = 0; i <= cols; i++) {
@@ -263,7 +269,10 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
           gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
           gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l, size, gl.FLOAT, false, 0, 0);
         };
-        bind(bPos, pos, 'aPos', 3); bind(bN, nor, 'aN', 3); bind(bSh, sh, 'aSh', 1);
+        bind(bPos, pos, 'aPos', 3); bind(bN, nor, 'aN', 3); bind(bSh, sh, 'aSh', 1); bind(bUV, uv, 'aUV', 2);
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(gl.getUniformLocation(prog, 'uLogo'), 0);
+        gl.uniform1f(gl.getUniformLocation(prog, 'uLogoA'), onCloth && uvOk ? clamp((fEnd - f) / (D * 0.16)) : 0);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bIdx);
         gl.drawElements(gl.TRIANGLES, nIdx, gl.UNSIGNED_SHORT, 0);
       } else if (ctx2) {
@@ -310,23 +319,13 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       // À la fin, logo, avion et câbles disparaissent ensemble en fondu.
       const fade = clamp((fEnd - f) / (D * 0.16)); // tout s'efface pendant que les derniers centimètres de drap partent
       if (hintRef.current) { hintRef.current.style.opacity = `${fade}`; hintRef.current.style.setProperty('--hint', `${clamp(1 - p * 7)}`); }
-      // le logo est « posé sur le drap » : il disparaît là où le coin soulevé l'a recouvert ou découvert
-      // (on ne garde que la partie au-delà de la pointe du rabat, côté haut-gauche)
-      if (hintRef.current) {
-        const tipA = (corner[0] - Cx) * ux + (corner[1] - Cy) * uy;
-        const cut = Math.max(f, tipA);
-        const box = hintRef.current.getBoundingClientRect();
-        const L = 4000, ox = Cx + ux * cut - box.left, oy = Cy + uy * cut - box.top;
-        const pt = (x: number, y: number) => `${x.toFixed(1)}px ${y.toFixed(1)}px`;
-        hintRef.current.style.clipPath = `polygon(${pt(ox + vx * L, oy + vy * L)},${pt(ox - vx * L, oy - vy * L)},${pt(ox - vx * L + ux * L, oy - vy * L + uy * L)},${pt(ox + vx * L + ux * L, oy + vy * L + uy * L)})`;
-      }
       if (plane) plane.style.opacity = `${fade}`;
       ropeRef.current?.parentElement?.setAttribute('opacity', `${fade}`);
 
       raf = requestAnimationFrame(frame);
     };
     const kick = () => { if (!raf) raf = requestAnimationFrame(frame); };
-    const onResize = () => { resize(); kick(); };
+    const onResize = () => { resize(); uvOk = false; kick(); };
     window.addEventListener('scroll', kick, { passive: true });
     window.addEventListener('resize', onResize);
     const ro = new ResizeObserver(onResize); ro.observe(veil);
@@ -347,7 +346,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
       </div>
       <div className="veil" ref={veilRef} aria-hidden="true">
         <canvas ref={canRef} />
-        <div className="veil-logo" ref={flatRef}>
+        <div className="veil-logo">
           <div className="veil-hint" ref={hintRef}>
             {/* le logo se construit morceau par morceau à l'arrivée sur la page */}
             <div className="logo-build">
