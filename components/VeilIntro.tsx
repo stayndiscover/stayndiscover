@@ -44,13 +44,6 @@ void main(){
   float flat0 = 1.0 - smoothstep(0.5, 3.0, vZ);
   float sh = flat0 * smoothstep(uF - uR * 0.2, uF + uR * 0.4, vSh) * (0.05 + 0.13 * exp(-(vSh - uF) / (uR * 2.2))) * (1.0 - smoothstep(uEnd - uR * 2.0, uEnd, vSh));
   col *= 1.0 - sh;
-  // partie encore posée : le blanc (et le logo imprimé dessus) est en dessous, dans la page ;
-  // ici on ne dessine que les ombres et le relief du tissu, en transparence
-  if (vSh >= uF && vZ < 3.0) {
-    float lum = clamp(dot(col, vec3(0.333)) / 0.987, 0.0, 1.0);
-    gl_FragColor = vec4(0.04, 0.12, 0.11, clamp(1.0 - lum, 0.0, 0.45));
-    return;
-  }
   gl_FragColor = vec4(col, 1.0);
 }`;
 // ombre portée du drap sur la page déjà dévoilée
@@ -193,12 +186,36 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         out[o] = cxs + (X - cxs) * s; out[o + 1] = cys + (Y - cys) * s; out[o + 2] = z;
       };
 
-      // partie du drap encore posée = au-delà du pli (a ≥ f) : le fond blanc et le logo y sont découpés,
-      // si bien que le logo glisse sous le rabat et disparaît au fur et à mesure
+      // Le logo est « posé » sur le drap : il reste visible au-delà du pli (a ≥ f), sauf là où le coin soulevé
+      // du voile passe par-dessus. On découpe donc : demi-plan posé MOINS le contour du rabat (règle evenodd).
       if (flatRef.current) {
+        const aS = (x: number, y: number) => (x - Cx) * ux + (y - Cy) * uy;
+        // 1. contour de la partie soulevée, dans le repère du drap (a, b) : rectangle ∩ {a < f}
+        const rect: [number, number][] = [[-PAD, -PAD], [W + PAD, -PAD], [W + PAD, H + PAD], [-PAD, H + PAD]]
+          .map(([x, y]) => [(x - Cx) * ux + (y - Cy) * uy, (x - Cx) * vx + (y - Cy) * vy]);
+        const cut = (poly: [number, number][], keep: (q: [number, number]) => number) => {
+          const out: [number, number][] = [];
+          for (let i = 0; i < poly.length; i++) {
+            const A = poly[i], B = poly[(i + 1) % poly.length], ka = keep(A), kb = keep(B);
+            if (ka >= 0) out.push(A);
+            if ((ka >= 0) !== (kb >= 0)) { const t2 = ka / (ka - kb); out.push([A[0] + (B[0] - A[0]) * t2, A[1] + (B[1] - A[1]) * t2]); }
+          }
+          return out;
+        };
+        const peeled = cut(rect, (q) => f - q[0]);
+        // 2. ce contour, une fois enroulé et soulevé, projeté à l'écran (bords échantillonnés car le tissu se courbe)
+        const tmp = new Float32Array(3); let flap: [number, number][] = [];
+        for (let i = 0; i < peeled.length; i++) {
+          const A = peeled[i], B = peeled[(i + 1) % peeled.length];
+          for (let k = 0; k < 24; k++) { const t2 = k / 24; place(A[0] + (B[0] - A[0]) * t2, A[1] + (B[1] - A[1]) * t2, tmp, 0); flap.push([tmp[0], tmp[1]]); }
+        }
+        // 3. on ne garde du rabat que ce qui recouvre la partie posée
+        flap = flap.length > 2 ? cut(flap, (q) => aS(q[0], q[1]) - f) : [];
         const ex = Cx + f * ux, ey = Cy + f * uy, L = 4 * (W + H);
-        const pt = (x: number, y: number) => `${x.toFixed(1)}px ${y.toFixed(1)}px`;
-        flatRef.current.style.clipPath = `polygon(${pt(ex + vx * L, ey + vy * L)},${pt(ex - vx * L, ey - vy * L)},${pt(ex - vx * L + ux * L, ey - vy * L + uy * L)},${pt(ex + vx * L + ux * L, ey + vy * L + uy * L)})`;
+        const P = (x: number, y: number) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+        let d = `M${P(ex + vx * L, ey + vy * L)}L${P(ex - vx * L, ey - vy * L)}L${P(ex - vx * L + ux * L, ey - vy * L + uy * L)}L${P(ex + vx * L + ux * L, ey + vy * L + uy * L)}Z`;
+        if (flap.length > 2) d += 'M' + flap.map(([x, y]) => P(x, y)).join('L') + 'Z';
+        flatRef.current.style.clipPath = `path(evenodd, "${d}")`;
       }
       if (prog && gl) {
         // maillage
@@ -234,7 +251,7 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
           gl.drawArrays(gl.TRIANGLES, 0, 3); gl.disableVertexAttribArray(la);
         }
         // 2. le drap
-        gl.enable(gl.BLEND); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
+        gl.disable(gl.BLEND); gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
         gl.useProgram(prog);
         gl.uniform2f(gl.getUniformLocation(prog, 'uRes'), W, H); gl.uniform1f(gl.getUniformLocation(prog, 'uDpr'), dpr);
         gl.uniform1f(gl.getUniformLocation(prog, 'uF'), f); gl.uniform1f(gl.getUniformLocation(prog, 'uR'), r);
@@ -248,7 +265,14 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bIdx);
         gl.drawElements(gl.TRIANGLES, nIdx, gl.UNSIGNED_SHORT, 0);
       } else if (ctx2) {
-        ctx2.clearRect(0, 0, cv.width, cv.height); // secours sans WebGL : seul le fond blanc découpé reste
+        // secours sans WebGL : drap plat dont la partie encore posée se réduit
+        ctx2.setTransform(dpr, 0, 0, dpr, 0, 0); ctx2.clearRect(0, 0, W, H);
+        ctx2.fillStyle = '#fbfaf6';
+        const ex = Cx + f * ux, ey = Cy + f * uy, L = 4 * D;
+        ctx2.beginPath();
+        ctx2.moveTo(ex + vx * L, ey + vy * L); ctx2.lineTo(ex - vx * L, ey - vy * L);
+        ctx2.lineTo(ex - vx * L + ux * L, ey - vy * L + uy * L); ctx2.lineTo(ex + vx * L + ux * L, ey + vy * L + uy * L);
+        ctx2.closePath(); ctx2.fill();
       }
 
       // ——— l'avion : il tire le coin du drap (point a = 0, b = 0) au bout de deux câbles
@@ -319,7 +343,8 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
         <div className="veil-runway" ref={runRef} aria-hidden="true" />
       </div>
       <div className="veil" ref={veilRef} aria-hidden="true">
-        <div className="veil-flat" ref={flatRef}>
+        <canvas ref={canRef} />
+        <div className="veil-logo" ref={flatRef}>
           <div className="veil-hint" ref={hintRef}>
             {/* le logo se construit morceau par morceau à l'arrivée sur la page */}
             <div className="logo-build">
@@ -332,7 +357,6 @@ export function VeilIntro({ children, labels }: { children: React.ReactNode; lab
             <i />
           </div>
         </div>
-        <canvas ref={canRef} />
         <svg className="veil-ropes"><path ref={ropeRef} /><path ref={rope2Ref} /></svg>
         <div className="veil-plane" ref={planeRef}>
           <div className="veil-plane-in" ref={planeInRef}>

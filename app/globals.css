@@ -518,5 +518,5 @@ html[data-veil=on] .fly-plane{opacity:0!important}
 @keyframes lp-letter{0%{opacity:0;transform:translateY(45%)}70%{opacity:1;transform:translateY(-6%)}100%{opacity:1;transform:none}}
 /* la phrase et l'icône de défilement arrivent une fois le logo monté */
 .veil-hint > span,.veil-hint > i{animation:lp-rise .7s ease 4.3s both;filter:opacity(var(--hint,1))}
-/* partie du drap encore posée : fond blanc + logo « imprimé » dessus, découpés au niveau du pli */
-.veil-flat{position:absolute;inset:0;background:rgb(253,252,249)}
+/* calque du logo, découpé : il disparaît sous le coin soulevé du voile */
+.veil-logo{position:absolute;inset:0}

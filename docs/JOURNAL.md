@@ -2,6 +2,10 @@
 
 Demandé par le cahier des charges du planificateur (§ 17) : chaque évolution est notée ici, de la plus récente à la plus ancienne.
 
+## 2026-11-11 — Ouverture : le logo glisse sous le coin du voile (sans fond blanc ajouté)
+- Retour au rendu d’origine du drap (le calque blanc séparé est supprimé).
+- Le logo est au-dessus du drap mais découpé (clip-path evenodd) : partie encore posée MOINS le contour exact du coin soulevé, calculé à chaque image. Il disparaît donc au fur et à mesure sous l’angle du voile.
+
 ## 2026-11-11 — Ouverture : le logo passe sous le voile
 - Le logo est désormais « imprimé » sur la partie du drap encore posée : le fond blanc et le logo (calque .veil-flat) sont découpés au niveau du pli, et le rabat soulevé, dessiné par-dessus, le recouvre. Quand le coin du voile passe sur le logo, celui-ci disparaît au fur et à mesure sous le tissu. Les ombres et le relief du tissu posé sont dessinés en transparence par-dessus (le logo en reçoit aussi).
 
